@@ -1,0 +1,183 @@
+{
+  "project_info": {
+    "project_number": "853863500705",
+    "firebase_url": "https://pango-ecommerce.firebaseio.com",
+    "project_id": "pango-ecommerce",
+    "storage_bucket": "pango-ecommerce.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:853863500705:android:9af040d06f2e5cea4f99e0",
+        "android_client_info": {
+          "package_name": "com.app.pangodelivery"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "853863500705-t7rkmks9crvu35knt60bq1coi37f3asd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.app.pangodelivery",
+            "certificate_hash": "a9f04c0c48a161e40c12cda15793dd1138f890d0"
+          }
+        },
+        {
+          "client_id": "853863500705-tji5rdhtbb6hgkmoc905o8kghpf7amrm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.app.pangodelivery",
+            "certificate_hash": "ba0b06e645a7b18dc2c47337ea70b73947653927"
+          }
+        },
+        {
+          "client_id": "853863500705-brvrvd2ko2ib2k3bki8kev0b3qakqk9s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNWZcdco7VxvG2gyso0VLYyAOXIYsPWyg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "853863500705-brvrvd2ko2ib2k3bki8kev0b3qakqk9s.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:853863500705:android:5fe0429123d745c94f99e0",
+        "android_client_info": {
+          "package_name": "com.app.pangoorder"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "853863500705-ccus3ten6psocko8io87egomqhpemq23.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.app.pangoorder",
+            "certificate_hash": "ba0b06e645a7b18dc2c47337ea70b73947653927"
+          }
+        },
+        {
+          "client_id": "853863500705-k0krt8ej8o6dug58chd0rvuo9om1h2eq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.app.pangoorder",
+            "certificate_hash": "a9f04c0c48a161e40c12cda15793dd1138f890d0"
+          }
+        },
+        {
+          "client_id": "853863500705-brvrvd2ko2ib2k3bki8kev0b3qakqk9s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNWZcdco7VxvG2gyso0VLYyAOXIYsPWyg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "853863500705-brvrvd2ko2ib2k3bki8kev0b3qakqk9s.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:853863500705:android:f2b30f04c3dff0354f99e0",
+        "android_client_info": {
+          "package_name": "com.app.pangosell"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "853863500705-5lp1j7ot4lc52fk2f2327gdk8nljo8rg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.app.pangosell",
+            "certificate_hash": "a9f04c0c48a161e40c12cda15793dd1138f890d0"
+          }
+        },
+        {
+          "client_id": "853863500705-k0tu5ho9ahh33mmlpifkdn2pc5eh68b6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.app.pangosell",
+            "certificate_hash": "ba0b06e645a7b18dc2c47337ea70b73947653927"
+          }
+        },
+        {
+          "client_id": "853863500705-brvrvd2ko2ib2k3bki8kev0b3qakqk9s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNWZcdco7VxvG2gyso0VLYyAOXIYsPWyg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "853863500705-brvrvd2ko2ib2k3bki8kev0b3qakqk9s.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:853863500705:android:cf5ddf5415c49a434f99e0",
+        "android_client_info": {
+          "package_name": "com.pango.pangodelivery"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "853863500705-t0lp6bsgadar1h3965surdtfdl11fedf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pango.pangodelivery",
+            "certificate_hash": "a9f04c0c48a161e40c12cda15793dd1138f890d0"
+          }
+        },
+        {
+          "client_id": "853863500705-brvrvd2ko2ib2k3bki8kev0b3qakqk9s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNWZcdco7VxvG2gyso0VLYyAOXIYsPWyg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "853863500705-brvrvd2ko2ib2k3bki8kev0b3qakqk9s.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
