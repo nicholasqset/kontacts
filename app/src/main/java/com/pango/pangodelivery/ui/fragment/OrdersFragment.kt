@@ -118,8 +118,8 @@ class OrdersFragment : Fragment() {
                         var branchImg = ""
                         var branchEmail = ""
                         var branchPhone = ""
-                        var branchLat = 0.0f
-                        var branchLng = 0.0f
+                        var branchLat = 0.0
+                        var branchLng = 0.0
                         var branchName = ""
                         db.collection("branches").document(order.branchId!!).get()
                             .addOnSuccessListener {
@@ -128,16 +128,18 @@ class OrdersFragment : Fragment() {
                                 branchImg = it.data!!["branchImg"].toString()
                                 branchEmail = it.data!!["email"].toString()
                                 branchPhone = it.data!!["phoneNo"].toString()
-                                branchLat = it.data!!["latitude"].toString().toFloat()
-                                branchLng = it.data!!["longitude"].toString().toFloat()
+                                branchLat = it.data!!["latitude"].toString().toDouble()
+                                branchLng = it.data!!["longitude"].toString().toDouble()
                                 Glide.with(v.context).load(branchImg).into(holder.store)
+                                holder.storeName.text = branchName
                             }.addOnFailureListener {
 
                             }
 
                         binding.orderPlaceholder.visibility = View.GONE
                         binding.ordersCount.text = "Available Orders (${orderList.size} orders)"
-                        holder.storeName.text = branchName
+
+
                         holder.orderId.text = order.orderNumber
                         val formatter = SimpleDateFormat("dd MMM yyyy HH:mm:ss")
                         val date: String = formatter.format(order.timestamp!!.toDate())

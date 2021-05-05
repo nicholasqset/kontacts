@@ -7,36 +7,7 @@
     android:orientation="vertical"
     tools:context=".ui.fragment.DashboardFragment">
 
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:background="@color/white"
-            android:orientation="vertical">
-            <androidx.appcompat.widget.AppCompatTextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Welcome, Jean Eric"
-                android:fontFamily="@font/antic"
-                android:textColor="@color/black"
-                android:textStyle="bold"
-                android:id="@+id/userName"
-                android:layout_marginBottom="10dp"
-                android:textSize="25sp"/>
-            <androidx.appcompat.widget.AppCompatTextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Showing your orders"
-                android:fontFamily="@font/antic"
-                android:textColor="@color/black"
-                android:layout_marginBottom="10dp"
-                android:textSize="20sp"/>
 
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -88,7 +59,7 @@
                     <androidx.appcompat.widget.AppCompatTextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="2"
+                        android:text="0"
                         android:layout_margin="5dp"
                         android:fontFamily="@font/antic"
                         android:textColor="@color/black"
@@ -122,7 +93,7 @@
                     <androidx.appcompat.widget.AppCompatTextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="1.0"
+                        android:text="0.0"
                         android:layout_margin="5dp"
                         android:fontFamily="@font/antic"
                         android:textColor="@color/black"
@@ -132,7 +103,7 @@
                     <androidx.appcompat.widget.AppCompatTextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="By 2 orders"
+                        android:text="By 0 orders"
                         android:layout_margin="5dp"
                         android:fontFamily="@font/antic"
                         android:textSize="20sp"/>
@@ -230,7 +201,7 @@
                     <androidx.appcompat.widget.AppCompatTextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="600"
+                        android:text="0"
                         android:layout_margin="5dp"
                         android:fontFamily="@font/antic"
                         android:textColor="@color/black"
@@ -274,7 +245,7 @@
                     <androidx.appcompat.widget.AppCompatTextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="By 2 orders"
+                        android:text="By 0 orders"
                         android:layout_margin="5dp"
                         android:fontFamily="@font/antic"
                         android:textSize="20sp"/>
@@ -299,7 +270,7 @@
                     <androidx.appcompat.widget.AppCompatTextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="600"
+                        android:text="0"
                         android:layout_margin="5dp"
                         android:fontFamily="@font/antic"
                         android:textColor="@android:color/holo_green_dark"

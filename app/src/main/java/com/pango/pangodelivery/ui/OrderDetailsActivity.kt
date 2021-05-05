@@ -44,14 +44,14 @@ class OrderDetailsActivity : AppCompatActivity() {
         val storeName = intent.getStringExtra("storeName")
         val storeId = intent.getStringExtra("storeId")
         val orderDate = intent.getStringExtra("orderDate")
-        val orderAmount = intent.getIntExtra("orderAmount",0)
+        val orderAmount = intent.getIntExtra("orderAmount", 0)
         val branchAddress = intent.getStringExtra("branchAddress")
         val branchEmail = intent.getStringExtra("branchEmail")
-        val branchPhone= intent.getStringExtra("branchPhone")
-        val branchLat = intent.getStringExtra("branchLat")
-        val branchLng = intent.getStringExtra("branchLng")
+        val branchPhone = intent.getStringExtra("branchPhone")
+        val branchLat = intent.getDoubleExtra("branchLat",0.0)
+        val branchLng = intent.getDoubleExtra("branchLng",0.0)
         val branchImg = intent.getStringExtra("branchImg")
-        val orderDelCharge = intent.getIntExtra("orderDelCharge",0)
+        val orderDelCharge = intent.getIntExtra("orderDelCharge", 0)
 
 
         supportActionBar!!.title = "Order#: $orderNumber"
@@ -66,7 +66,7 @@ class OrderDetailsActivity : AppCompatActivity() {
         binding.listItems.layoutManager = mLayoutManager
         binding.listItems.itemAnimator = DefaultItemAnimator()
         val db = Firebase.firestore
-        loadItemList( db, orderId)
+        loadItemList(db, orderId)
         firestoreListener =
             db.collection("orders").document(orderId!!)
                 .collection("items")
@@ -89,7 +89,7 @@ class OrderDetailsActivity : AppCompatActivity() {
 
                 })
         binding.acceptOrder.setOnClickListener {
-            val intent = Intent(it.context, MapsActivity::class.java)
+            val intent = Intent(this, MapsActivity::class.java)
             intent.putExtra("orderNumber", orderNumber)
             intent.putExtra("orderId", orderId)
             intent.putExtra("storeName", storeName)
@@ -103,10 +103,11 @@ class OrderDetailsActivity : AppCompatActivity() {
             intent.putExtra("branchLng", branchLng)
             intent.putExtra("branchImg", branchImg)
             intent.putExtra("orderDelCharge", orderDelCharge)
-           startActivity(intent)
+            startActivity(intent)
         }
 
     }
+
     private fun loadItemList(db: FirebaseFirestore, id: String?) {
         val query = db.collection("orders").document(id!!)
             .collection("items")
