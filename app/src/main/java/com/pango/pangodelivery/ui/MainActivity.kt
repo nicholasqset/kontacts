@@ -3,8 +3,10 @@ package com.pango.pangodelivery.ui
 import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.BitmapFactory
@@ -139,6 +141,13 @@ class MainActivity : AppCompatActivity(), PermissionListener {
                         val status = it.data!!["status"].toString()
                         val statusCode = it.data!!["statusCode"].toString().toDouble()
                         val orderAmount = it.data!!["orderAmount"].toString().toDouble()
+                        val custName = it.data!!["custName"].toString()
+                        val custPhone = it.data!!["custPhone"].toString()
+                        val delAddress = it.data!!["deliveryAddress"].toString()
+                        val delLat = it.data!!["deliveryLat"].toString()
+                        val delLng = it.data!!["deliveryLng"].toString()
+
+
                         val intent = Intent(this, MapsActivity::class.java)
                         intent.putExtra("orderNumber", orderNumber)
                         intent.putExtra("orderId", orderId)
@@ -155,6 +164,11 @@ class MainActivity : AppCompatActivity(), PermissionListener {
                         intent.putExtra("orderDelCharge", orderDelCharge)
                         intent.putExtra("status", status)
                         intent.putExtra("statusCode", statusCode)
+                        intent.putExtra("custName",custName)
+                        intent.putExtra("custPhone", custPhone)
+                        intent.putExtra("deliveryAddress", delAddress)
+                        intent.putExtra("deliveryLat", delLat)
+                        intent.putExtra("deliveryLng", delLng)
                         startActivity(intent)
 
 
@@ -165,6 +179,16 @@ class MainActivity : AppCompatActivity(), PermissionListener {
                 docRef.get().addOnSuccessListener {
                     if (it != null) {
                         Log.d("MainActivity", "DocumentSnapshot data: ${it.data}")
+                        val sharedPref = getSharedPreferences("PangoDelivery", Context.MODE_PRIVATE)
+                        val editor: SharedPreferences.Editor = sharedPref.edit()
+                        editor.putString("myId", uid)
+                        editor.putString("name", it.data!!["displayName"].toString())
+                        editor.putString("phone", it.data!!["phoneNumber"].toString())
+                        editor.putString("email", it.data!!["email"].toString())
+                        editor.putString("pic", it.data!!["userPhoto"].toString())
+                        editor.apply()
+                        editor.commit()
+
                         // Create the AccountHeader
                         headerView = AccountHeaderView(this).apply {
                             attachToSliderView(binding.slider) // attach to the slider
@@ -295,7 +319,7 @@ class MainActivity : AppCompatActivity(), PermissionListener {
                         supportActionBar!!.title = "Dashboard"
                         val bundle = Bundle()
                         bundle.putString("uid", uid)
-                        ordersFragment.arguments = bundle
+                        dashFragment.arguments = bundle
                         supportFragmentManager.beginTransaction()
                             .replace(R.id.container, dashFragment)
                             .commit()
@@ -305,13 +329,13 @@ class MainActivity : AppCompatActivity(), PermissionListener {
                         supportActionBar!!.title = "Earnings"
                         val bundle = Bundle()
                         bundle.putString("uid", uid)
-                        ordersFragment.arguments = bundle
+                        earnFragment.arguments = bundle
                         supportFragmentManager.beginTransaction()
                             .replace(R.id.container, earnFragment)
                             .commit()
 
                     }
-                    3 -> {
+                    /*3 -> {
                         supportActionBar!!.title = "My Account"
                         val bundle = Bundle()
                         bundle.putString("uid", uid)
@@ -321,7 +345,7 @@ class MainActivity : AppCompatActivity(), PermissionListener {
                             .commit()
 
 
-                    }
+                    }*/
 
 
                 }

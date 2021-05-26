@@ -42,6 +42,7 @@ class OrdersFragment : Fragment() {
     private var driverLatLng: LatLng? = null
 
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -120,6 +121,7 @@ class OrdersFragment : Fragment() {
                         var branchLat = 0.0
                         var branchLng = 0.0
                         var branchName = ""
+                        var distance = 0
                         db.collection("branches").document(order.branchId!!).get()
                             .addOnSuccessListener {
                                 branchName = it.data!!["branch"].toString()
@@ -141,7 +143,7 @@ class OrdersFragment : Fragment() {
 
 
                                 //float distance = crntLocation.distanceTo(newLocation);  in meters
-                                val distance =(crntLocation.distanceTo(newLocation) / 1000).roundToInt() // in km
+                                distance =(crntLocation.distanceTo(newLocation) / 1000).roundToInt() // in km
                                 Log.e("OrdersFrag","distanceTo "+ distance)
                                 holder.orderDistance.text = "~${distance}Kms"
                             }.addOnFailureListener {
@@ -174,6 +176,13 @@ class OrdersFragment : Fragment() {
                             intent.putExtra("branchLng", branchLng)
                             intent.putExtra("branchImg", branchImg)
                             intent.putExtra("orderDelCharge", order.deliveryCharge)
+                            intent.putExtra("custName",order.orderBy)
+                            intent.putExtra("custPhone", order.orderByPhone)
+                            intent.putExtra("deliveryAddress", order.deliveryAddress)
+                            intent.putExtra("deliveryLat", order.deliveryLat)
+                            intent.putExtra("deliveryLng", order.deliveryLng)
+                            intent.putExtra("distance",distance)
+
                             it.context.startActivity(intent)
                         }
                     }

@@ -6,14 +6,13 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
-import android.content.res.Resources.NotFoundException
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.location.Address
-import android.location.Geocoder
+import android.location.Location
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
+import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -27,7 +26,15 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.android.gms.tasks.Continuation
+import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.EventListener
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.UploadTask
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionDeniedResponse
@@ -35,16 +42,20 @@ import com.karumi.dexter.listener.PermissionGrantedResponse
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.single.PermissionListener
 import com.pango.pangodelivery.R
+import com.pango.pangodelivery.common.Common
 import com.pango.pangodelivery.databinding.ActivityMapsBinding
+import com.pango.pangodelivery.ui.auth.LoginActivity
+import dmax.dialog.SpotsDialog
 import es.dmoral.toasty.Toasty
-import java.io.IOException
 import java.util.*
 
 
-class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, PermissionListener {
+class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, PermissionListener,
+    LocationListener {
 
     companion object {
         const val REQUEST_CHECK_SETTINGS = 43
+        const val SIGNATURE_REQUEST = 45
     }
 
     private lateinit var googleMap: GoogleMap
@@ -55,12 +66,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
     private var mAuthListener: FirebaseAuth.AuthStateListener? = null
     private val TAG = "MapsActivity"
     private var deliveryLatLng: LatLng? = null
-    private var driverLatLng:LatLng? = null
+    private var driverLatLng: LatLng? = null
     private var polylines: List<Polyline>? = null
     private val colors = intArrayOf(android.R.color.black)
     private var branchLat: Double = 0.0
     private var branchLng: Double = 0.0
-
+    private var orderId: String? = null
+    private var delLat: String? = null
+    private var delLng: String? = null
+    private var status: String? = null
+    private var statusCode: Int? = null
+    private var uid: String? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -71,7 +87,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         polylines = ArrayList()
         val orderNumber = intent.getStringExtra("orderNumber")
-        val orderId = intent.getStringExtra("orderId")
+        orderId = intent.getStringExtra("orderId")
         val storeName = intent.getStringExtra("storeName")
         val storeId = intent.getStringExtra("storeId")
         val orderDate = intent.getStringExtra("orderDate")
@@ -83,11 +99,69 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
         branchLng = intent.getDoubleExtra("branchLng", 0.0)
         val branchImg = intent.getStringExtra("branchImg")
         val orderDelCharge = intent.getIntExtra("orderDelCharge", 0)
+        val custName = intent.getStringExtra("custName")
+        val custPhone = intent.getStringExtra("custPhone")
+        val delAddress = intent.getStringExtra("deliveryAddress")
+        delLat = intent.getStringExtra("deliveryLat")
+        delLng = intent.getStringExtra("deliveryLng")
+        status = intent.getStringExtra("status")
+        statusCode = intent.getIntExtra("statusCode", 1)
+
         supportActionBar!!.title = "Order#: $orderNumber"
-        supportActionBar!!.subtitle = ("On the way to the shop")
+        supportActionBar!!.subtitle = (status)
+
+        deliveryLatLng = LatLng(delLat!!.toDouble(), delLng!!.toDouble())
         binding.storeName.text = storeName
         binding.storeAddress.text = branchAddress
+        binding.storePhone.text = branchPhone
+        binding.custAddress.text = delAddress
+        binding.custName.text = custName
+        binding.custPhone.text = custPhone
+        val db = Firebase.firestore
+        mAuth = FirebaseAuth.getInstance()
 
+        mAuthListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            val user = firebaseAuth.currentUser
+            if (user != null) {
+                // User is signed in
+                uid = user.uid
+                db.collection("onDelivery").document(uid!!)
+                    .addSnapshotListener(EventListener { value, error ->
+                        if (error == null) {
+                            status = value!!.data!!["status"].toString()
+                            statusCode = value.data!!["statusCode"].toString().toInt()
+
+                            supportActionBar!!.subtitle = (status)
+                            when (statusCode) {
+                                3 -> {
+                                    binding.customerDetails.visibility = View.VISIBLE
+                                    binding.storeDetails.visibility = View.GONE
+                                    binding.reachedOrder.visibility = View.GONE
+                                    binding.pickedOrder.visibility = View.GONE
+                                    binding.completeOrder.visibility = View.VISIBLE
+                                }
+                                2 -> {
+                                    binding.reachedOrder.visibility = View.GONE
+                                    binding.pickedOrder.visibility = View.VISIBLE
+                                    binding.completeOrder.visibility = View.GONE
+
+                                }
+                                1 -> {
+                                    binding.reachedOrder.visibility = View.VISIBLE
+                                    binding.pickedOrder.visibility = View.GONE
+                                    binding.completeOrder.visibility = View.GONE
+                                }
+                            }
+                            getCurrentLocation()
+                        }
+                    })
+
+            } else {
+                val intent = Intent(this, LoginActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
+        }
 
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -95,8 +169,70 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
         mapFragment!!.getMapAsync(this)
         fusedLocationProviderClient = FusedLocationProviderClient(this)
         Log.e("MapsActivity", "branchLatLng $branchLat $branchLng")
-    }
 
+        binding.reachedOrder.setOnClickListener {
+            dialog = SpotsDialog.Builder().setContext(this).build()
+            dialog.setMessage("Please wait...")
+            dialog.show()
+            db.collection("onDelivery").document(uid!!)
+                .update(
+                    mapOf(
+                        "status" to "Picking up order",
+                        "statusCode" to 2
+                    )
+                ).addOnSuccessListener {
+                    db.collection("orders").document(orderId!!)
+                        .update(
+                            mapOf(
+                                "currentStatus" to "Picking up order",
+                            )
+                        ).addOnSuccessListener {
+                            dialog.dismiss()
+                        }.addOnFailureListener { e ->
+                            dialog.dismiss()
+                            Toasty.error(this, "Something went wrong, please try again").show()
+                            Log.w(TAG, "Error updating document", e)
+                        }
+                }.addOnFailureListener { e ->
+                    dialog.dismiss()
+                    Toasty.error(this, "Something went wrong, please try again").show()
+                    Log.w(TAG, "Error updating document", e)
+                }
+        }
+        binding.pickedOrder.setOnClickListener {
+            dialog = SpotsDialog.Builder().setContext(this).build()
+            dialog.setMessage("Please wait...")
+            dialog.show()
+            db.collection("onDelivery").document(uid!!)
+                .update(
+                    mapOf(
+                        "status" to "Heading to customer",
+                        "statusCode" to 3
+                    )
+                ).addOnSuccessListener {
+                    db.collection("orders").document(orderId!!)
+                        .update(
+                            mapOf(
+                                "currentStatus" to "Heading to customer",
+                            )
+                        ).addOnSuccessListener {
+                            dialog.dismiss()
+                        }.addOnFailureListener { e ->
+                            dialog.dismiss()
+                            Toasty.error(this, "Something went wrong, please try again").show()
+                            Log.w(TAG, "Error updating document", e)
+                        }
+                }.addOnFailureListener { e ->
+                    dialog.dismiss()
+                    Toasty.error(this, "Something went wrong, please try again").show()
+                    Log.w(TAG, "Error updating document", e)
+                }
+        }
+        binding.completeOrder.setOnClickListener {
+            val i = Intent(this@MapsActivity, SignatureActivity::class.java)
+            startActivityForResult(i, SIGNATURE_REQUEST)
+        }
+    }
 
 
     override fun onMapReady(map: GoogleMap?) {
@@ -252,35 +388,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
                         e.printStackTrace()
                     }*/
 
-                    val icon = BitmapDescriptorFactory.fromBitmap(
-                        BitmapFactory.decodeResource(
-                            this.resources,
-                            R.drawable.marker
-                        )
-                    )
-                    googleMap.addMarker(
-                        MarkerOptions()
-                            .position(LatLng(mLastLocation!!.latitude, mLastLocation.longitude))
-                            .title("Current Location")
-
-                            .icon(icon)
-                    )
-
-
-                    Log.e("MapsActivity", "LatLng ${mLastLocation.latitude} ${mLastLocation.longitude}")
-                    Log.e("MapsActivity", "branchLatLng $branchLat $branchLng")
-                    driverLatLng = LatLng(mLastLocation.latitude, mLastLocation.longitude)
-                    val routing = Routing.Builder()
-                        .travelMode(AbstractRouting.TravelMode.DRIVING)
-                        .withListener(this)
-                        .alternativeRoutes(false)
-                        .key("AIzaSyBdGRnFBDUjXw4Aa4GQtyTCnIfzT6lwdQ4")
-                        .waypoints(
-                            driverLatLng,
-                            LatLng(branchLat, branchLng)
-                        )
-                        .build()
-                    routing.execute()
+                    drawRoute(mLastLocation)
 
 
                 } else {
@@ -289,12 +397,119 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
             }
     }
 
+    private fun drawRoute(mLastLocation: Location?) {
+        val icon = BitmapDescriptorFactory.fromBitmap(
+            BitmapFactory.decodeResource(
+                this.resources,
+                R.drawable.marker
+            )
+        )
+        googleMap.addMarker(
+            MarkerOptions()
+                .position(LatLng(mLastLocation!!.latitude, mLastLocation.longitude))
+                .title("Current Location")
+
+                .icon(icon)
+        )
+
+
+        Log.e("MapsActivity", "LatLng ${mLastLocation.latitude} ${mLastLocation.longitude}")
+        Log.e("MapsActivity", "branchLatLng $branchLat $branchLng")
+        driverLatLng = LatLng(mLastLocation.latitude, mLastLocation.longitude)
+        if (statusCode == 1 || statusCode == 2) {
+            val routing = Routing.Builder()
+                .travelMode(AbstractRouting.TravelMode.DRIVING)
+                .withListener(this)
+                .alternativeRoutes(false)
+                .key("AIzaSyBdGRnFBDUjXw4Aa4GQtyTCnIfzT6lwdQ4")
+                .waypoints(
+                    driverLatLng,
+                    LatLng(branchLat, branchLng)
+                )
+                .build()
+            routing.execute()
+        } else {
+            val routing = Routing.Builder()
+                .travelMode(AbstractRouting.TravelMode.DRIVING)
+                .withListener(this)
+                .alternativeRoutes(false)
+                .key("AIzaSyBdGRnFBDUjXw4Aa4GQtyTCnIfzT6lwdQ4")
+                .waypoints(
+                    driverLatLng,
+                    deliveryLatLng
+                )
+                .build()
+            routing.execute()
+        }
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 
         when (requestCode) {
             REQUEST_CHECK_SETTINGS -> {
                 if (resultCode == Activity.RESULT_OK) {
                     getCurrentLocation()
+                }
+            }
+            SIGNATURE_REQUEST -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    if (data != null) {
+                        val result: ByteArray? = data.getByteArrayExtra("result")
+                        dialog = SpotsDialog.Builder().setContext(this).build()
+                        dialog.setMessage("Please wait...")
+                        dialog.show()
+
+                        val time = "" + System.currentTimeMillis()
+                        val storageRef = FirebaseStorage.getInstance().getReference("documents")
+                            .child(uid!!)
+                        val ref = storageRef.child(time)
+                        ref.putBytes(result!!).addOnProgressListener {
+
+                        }.continueWithTask {
+                            ref.downloadUrl.addOnSuccessListener { url ->
+                                val content: String = url.toString()
+                                val db = Firebase.firestore
+                                val delData = mapOf(
+                                    "status" to 6,
+                                    "currentStatus" to "Delivery complete",
+                                    "signature" to content,
+                                    "deliveryDoneOn" to FieldValue.serverTimestamp()
+
+
+                                )
+                                db.collection("orders").document(orderId!!)
+                                    .update(
+                                        delData
+                                    ).addOnSuccessListener {
+
+                                        db.collection("onDelivery").document(uid!!)
+                                            .delete()
+                                            .addOnSuccessListener {
+                                                dialog.dismiss()
+                                                Toasty.success(this, "Delivery successfully complete", Toasty.LENGTH_LONG)
+                                                    .show()
+                                                val intent = Intent(this,MainActivity::class.java)
+                                                startActivity(intent)
+                                                finish()
+                                            }
+                                    }.addOnFailureListener { e ->
+                                        dialog.dismiss()
+                                        Toasty.error(this, "Something went wrong, please try again")
+                                            .show()
+                                        Log.w(TAG, "Error updating document", e)
+                                    }
+
+                            }.addOnFailureListener {
+
+                            }
+                            // Request the public download URL
+                            ref.downloadUrl
+                        }
+
+                    }
+                } else if (resultCode == Activity.RESULT_CANCELED) {
+                    Toasty.info(this, "You have cancelled taking of signature", Toasty.LENGTH_SHORT)
+                        .show()
                 }
             }
         }
@@ -328,7 +543,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
     override fun onRoutingSuccess(p0: ArrayList<Route>?, p1: Int) {
         val cameraPosition = CameraPosition.Builder()
             .target(driverLatLng!!)
-            .zoom(15f)
+            .zoom(18f)
             .build()
         googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
 
@@ -362,13 +577,31 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
 
         // Start marker
         val options = MarkerOptions()
-        options.position(LatLng(branchLat,branchLng))
+        options.position(LatLng(branchLat, branchLng))
         options.icon(shopMarkerIcon)
         googleMap.addMarker(options)
 
     }
 
     override fun onRoutingCancelled() {
+
+    }
+
+    override fun onLocationChanged(p0: Location) {
+        drawRoute(p0)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        mAuth!!.addAuthStateListener(mAuthListener!!)
+
+
+    }
+
+    override fun onStop() {
+        super.onStop()
+        mAuth!!.removeAuthStateListener(mAuthListener!!)
+
 
     }
 }

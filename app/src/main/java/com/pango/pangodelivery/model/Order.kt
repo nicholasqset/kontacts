@@ -26,5 +26,15 @@ class Order : Serializable {
     var branchName: String? = null
     var branchPhoneNo: String? = null
     var moreInfo: String? = null
+    var orderByPhone: String? =null
+    var deliveryAddress: String? =null
+    var deliveryLat: String? =null
+    var deliveryLng: String? =null
+    var deliveryStartedOn: com.google.firebase.Timestamp? =null
+    var deliveryByName: String? =null
+    var deliveryByPhone: String? =null
+    var deliveryByPhoto: String? =null
+    var deliveryById: String? =null
+    var deliveryDoneOn: com.google.firebase.Timestamp? = null
 
 }

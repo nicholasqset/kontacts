@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:weightSum="10"
+        android:padding="5dp"
+        android:orientation="horizontal">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_width="0dp"
+            android:layout_weight="2"
+            android:id="@+id/storePic"
+            android:src="@mipmap/ic_launcher"
+            android:layout_height="80dp"/>
+        <LinearLayout
+            android:layout_width="0dp"
+            android:orientation="vertical"
+            android:layout_weight="6"
+            android:gravity="center_vertical"
+            android:padding="5dp"
+            android:layout_height="match_parent">
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Quickmart Supermarkets"
+                android:fontFamily="@font/antic"
+                android:textColor="@color/purple"
+                android:id="@+id/orderId"
+                android:textStyle="bold"
+                android:textSize="16sp"/>
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Quickmart Supermarkets"
+                android:fontFamily="@font/antic"
+                android:textColor="@color/black"
+                android:id="@+id/storeName"
+                android:textStyle="bold"
+                android:textSize="16sp"/>
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Completed at 2:35pm"
+                android:id="@+id/orderTime"
+                android:fontFamily="@font/antic"
+                android:textSize="16sp"/>
+
+
+        </LinearLayout>
+        <androidx.appcompat.widget.AppCompatTextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:text="+300"
+            android:id="@+id/orderCommission"
+            android:layout_weight="2"
+            android:layout_margin="5dp"
+            android:gravity="center_vertical"
+            android:fontFamily="@font/antic"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:textSize="16sp"/>
+
+
+    </LinearLayout>
+    <TextView
+        android:layout_width="match_parent"
+        android:text="More Details"
+        android:fontFamily="@font/bungee"
+        android:textAlignment="center"
+        android:id="@+id/viewOrder"
+        android:textColor="@color/purple"
+        android:layout_height="wrap_content"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_margin="5dp"
+        android:background="#d3d3d3" />
+
+</LinearLayout>

@@ -15,23 +15,19 @@ import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.EventListener
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.pango.pangodelivery.R
-import com.pango.pangodelivery.common.Common
-import com.pango.pangodelivery.databinding.ActivityOrderDetailsBinding
+import com.pango.pangodelivery.databinding.ActivityEarningsDetailsBinding
 import com.pango.pangodelivery.model.Item
 import com.pango.pangodelivery.ui.auth.LoginActivity
 import com.pango.pangodelivery.viewholder.ItemViewHolder
-import dmax.dialog.SpotsDialog
-import es.dmoral.toasty.Toasty
 
 
-class OrderDetailsActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityOrderDetailsBinding
+class EarningsDetailsActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityEarningsDetailsBinding
     private lateinit var dialog: AlertDialog
     private var adapter: FirestoreRecyclerAdapter<Item, ItemViewHolder>? = null
     private var firestoreListener: ListenerRegistration? = null
@@ -42,7 +38,7 @@ class OrderDetailsActivity : AppCompatActivity() {
     private var uid: String? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityOrderDetailsBinding.inflate(layoutInflater)
+        binding = ActivityEarningsDetailsBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
         setSupportActionBar(binding.toolbar)
@@ -82,7 +78,8 @@ class OrderDetailsActivity : AppCompatActivity() {
         val delAddress = intent.getStringExtra("deliveryAddress")
         val delLat = intent.getStringExtra("deliveryLat")
         val delLng = intent.getStringExtra("deliveryLng")
-        val distance = intent.getIntExtra("distance", 0)
+        val startDate = intent.getStringExtra("startedOn")
+        val completedDate = intent.getStringExtra("completedOn")
 
 
 
@@ -92,7 +89,8 @@ class OrderDetailsActivity : AppCompatActivity() {
         binding.storeAddress.text = branchAddress
         binding.storeName.text = storeName
         binding.date.text = orderDate
-        binding.distance.text = "~${distance}Kms"
+        binding.startedOn.text = startDate
+        binding.completedOn.text = completedDate
         Glide.with(this).load(branchImg).into(binding.storePic)
 
         val mLayoutManager = LinearLayoutManager(this)
@@ -121,102 +119,8 @@ class OrderDetailsActivity : AppCompatActivity() {
 
 
                 })
-        binding.acceptOrder.setOnClickListener {
-
-            dialog = SpotsDialog.Builder().setContext(this).build()
-            dialog.setMessage("Please wait...")
-            dialog.show()
-            val deliveryDetails = hashMapOf(
-                "orderNumber" to orderNumber,
-                "orderId" to orderId,
-                "branchName" to storeName,
-                "branchId" to storeId,
-                "orderDate" to orderDate,
-                "orderAmount" to orderAmount,
-                "branchAddress" to branchAddress,
-                "branchEmail" to branchEmail,
-                "branchPhone" to branchPhone,
-                "branchLat" to branchLat,
-                "branchLng" to branchLng,
-                "branchImg" to branchImg,
-                "orderDelCharge" to orderDelCharge,
-                "status" to "On the way to the shop",
-                "driverId" to uid,
-                "statusCode" to 1,
-                "timestamp" to FieldValue.serverTimestamp(),
-                "custName" to custName,
-                "custPhone" to custPhone,
-                "deliveryAddress" to delAddress,
-                "deliveryLat" to delLat,
-                "deliveryLng" to delLng,
-                "deliveryByName" to Common(this).myName,
-                "deliveryByPhone" to Common(this).myPhone,
-                "deliveryByPhoto" to Common(this).myPic
-
-            )
-            val intent = Intent(this, MapsActivity::class.java)
-            intent.putExtra("orderNumber", orderNumber)
-            intent.putExtra("orderId", orderId)
-            intent.putExtra("storeName", storeName)
-            intent.putExtra("storeId", storeId)
-            intent.putExtra("orderDate", orderDate)
-            intent.putExtra("orderAmount", orderAmount)
-            intent.putExtra("branchAddress", branchAddress)
-            intent.putExtra("branchEmail", branchEmail)
-            intent.putExtra("branchPhone", branchPhone)
-            intent.putExtra("branchLat", branchLat)
-            intent.putExtra("branchLng", branchLng)
-            intent.putExtra("branchImg", branchImg)
-            intent.putExtra("orderDelCharge", orderDelCharge)
-            intent.putExtra("status", "On the way to the shop")
-            intent.putExtra("statusCode", 1)
-            intent.putExtra("custName",custName)
-            intent.putExtra("custPhone", custPhone)
-            intent.putExtra("deliveryAddress", delAddress)
-            intent.putExtra("deliveryLat", delLat)
-            intent.putExtra("deliveryLng", delLng)
-            db.collection("orders").document(orderId).get().addOnSuccessListener {
-                if (it.data!!["status"].toString() != "2"){
-                    dialog.dismiss()
-                    Toasty.info(this, "Order has been taken by another delivery person, please try another order", Toasty.LENGTH_LONG).show()
-                    finish()
-                }else{
-                    db.collection("onDelivery").document(uid!!)
-                        .set(deliveryDetails)
-                        .addOnSuccessListener {
-                            Log.d(TAG, "DocumentSnapshot successfully written!")
-                            db.collection("orders").document(orderId)
-                                .update(
-                                    mapOf(
-                                        "status" to 3,
-                                        "currentStatus" to "On the way to the shop",
-                                        "deliveryStartedOn" to FieldValue.serverTimestamp(),
-                                        "deliveryByName" to Common(this).myName,
-                                        "deliveryByPhone" to Common(this).myPhone,
-                                        "deliveryByPhoto" to Common(this).myPic,
-                                        "deliveryById" to uid
-                                    )
-                                ).addOnSuccessListener {
-                                    dialog.dismiss()
-                                    startActivity(intent)
-                                }.addOnFailureListener { e ->
-                                    dialog.dismiss()
-                                    Toasty.error(this, "Something went wrong, please try again").show()
-                                    Log.w(TAG, "Error updating document", e)
-                                }
-                        }
-                        .addOnFailureListener { e ->
-                            dialog.dismiss()
-                            Toasty.error(this, "Something went wrong, please try again").show()
-                            Log.w(TAG, "Error writing document", e)
-                        }
-                }
-
-            }
 
 
-
-        }
 
     }
 
@@ -241,7 +145,7 @@ class OrderDetailsActivity : AppCompatActivity() {
                 holder.title.text = Item.item
                 holder.price.text = "Kshs ${(Item.price!!.toInt()) * (Item.quantity!!)}"
                 holder.quant.text = "${Item.quantity!!}"
-                Glide.with(this@OrderDetailsActivity).load(Item.itemImage).into(holder.image)
+                Glide.with(this@EarningsDetailsActivity).load(Item.itemImage).into(holder.image)
 
 
             }
