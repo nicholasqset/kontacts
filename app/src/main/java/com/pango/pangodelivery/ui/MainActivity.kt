@@ -1,25 +1,48 @@
 package com.pango.pangodelivery.ui
 
+import android.Manifest
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.IntentSender
+import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
+import android.location.Address
+import android.location.Geocoder
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.core.app.ActivityCompat
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.bumptech.glide.Glide
+import com.directions.route.AbstractRouting
+import com.directions.route.Routing
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.*
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.karumi.dexter.Dexter
+import com.karumi.dexter.PermissionToken
+import com.karumi.dexter.listener.PermissionDeniedResponse
+import com.karumi.dexter.listener.PermissionGrantedResponse
+import com.karumi.dexter.listener.PermissionRequest
+import com.karumi.dexter.listener.single.PermissionListener
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem
 import com.mikepenz.materialdrawer.model.ProfileDrawerItem
 import com.mikepenz.materialdrawer.model.interfaces.withEmail
@@ -37,9 +60,12 @@ import com.pango.pangodelivery.ui.auth.LoginActivity
 import com.pango.pangodelivery.ui.fragment.DashboardFragment
 import com.pango.pangodelivery.ui.fragment.EarningsFragment
 import com.pango.pangodelivery.ui.fragment.MyAccountFragment
+import dmax.dialog.SpotsDialog
 import nl.joery.animatedbottombar.AnimatedBottomBar
+import java.io.IOException
+import java.util.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), PermissionListener {
     private lateinit var binding: ActivityMainBinding
     private lateinit var dialog: AlertDialog
     private var mAuth: FirebaseAuth? = null
@@ -48,6 +74,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var headerView: AccountHeaderView
     private lateinit var actionBarDrawerToggle: ActionBarDrawerToggle
     private var uid: String? = null
+    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+    private var driverLatLng: LatLng? = null
+    private var savedInstance: Bundle? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -56,13 +85,20 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
 
         mAuth = FirebaseAuth.getInstance()
-
+        savedInstance = savedInstanceState
 
         val dashFragment = DashboardFragment()
         val earnFragment = EarningsFragment()
         val accFragment = MyAccountFragment()
         val ordersFragment = OrdersFragment()
         val fragsList = listOf(dashFragment, earnFragment, accFragment)
+        fusedLocationProviderClient = FusedLocationProviderClient(this)
+
+        if (isPermissionGiven()) {
+            getCurrentLocation()
+        } else {
+            givePermission()
+        }
 
         actionBarDrawerToggle = ActionBarDrawerToggle(
             this,
@@ -73,21 +109,58 @@ class MainActivity : AppCompatActivity() {
         )
         binding.root.addDrawerListener(actionBarDrawerToggle)
         val db = Firebase.firestore
+
+        dialog = SpotsDialog.Builder().setContext(this).build()
+        dialog.setMessage("Please wait...")
+        dialog.show()
+
         mAuthListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
             val user = firebaseAuth.currentUser
             if (user != null) {
                 // User is signed in
                 uid = user.uid
-                if (savedInstanceState == null) {
-                    supportActionBar!!.title = "Available Orders"
 
-                    val bundle = Bundle()
-                    bundle.putString("uid", uid)
-                    ordersFragment.arguments = bundle
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.container, ordersFragment)
-                        .commit()
+                db.collection("onDelivery").document(uid!!).get().addOnSuccessListener {
+                    dialog.dismiss()
+                    if (it.exists()) {
+
+                        val branchId = it.data!!["branchId"].toString()
+                        val branchName = it.data!!["branchName"].toString()
+                        val branchAddress = it.data!!["branchAddress"].toString()
+                        val branchImg = it.data!!["branchImg"].toString()
+                        val branchEmail = it.data!!["branchEmail"].toString()
+                        val branchPhone = it.data!!["branchPhone"].toString()
+                        val branchLat = it.data!!["branchLat"].toString().toDouble()
+                        val branchLng = it.data!!["branchLng"].toString().toDouble()
+                        val orderNumber = it.data!!["orderNumber"].toString()
+                        val orderId = it.data!!["orderId"].toString()
+                        val orderDate = it.data!!["orderDate"].toString()
+                        val orderDelCharge = it.data!!["orderDelCharge"].toString()
+                        val status = it.data!!["status"].toString()
+                        val statusCode = it.data!!["statusCode"].toString().toDouble()
+                        val orderAmount = it.data!!["orderAmount"].toString().toDouble()
+                        val intent = Intent(this, MapsActivity::class.java)
+                        intent.putExtra("orderNumber", orderNumber)
+                        intent.putExtra("orderId", orderId)
+                        intent.putExtra("storeName", branchName)
+                        intent.putExtra("storeId", branchId)
+                        intent.putExtra("orderDate", orderDate)
+                        intent.putExtra("orderAmount", orderAmount)
+                        intent.putExtra("branchAddress", branchAddress)
+                        intent.putExtra("branchEmail", branchEmail)
+                        intent.putExtra("branchPhone", branchPhone)
+                        intent.putExtra("branchLat", branchLat)
+                        intent.putExtra("branchLng", branchLng)
+                        intent.putExtra("branchImg", branchImg)
+                        intent.putExtra("orderDelCharge", orderDelCharge)
+                        intent.putExtra("status", status)
+                        intent.putExtra("statusCode", statusCode)
+                        startActivity(intent)
+
+
+                    }
                 }
+
                 val docRef = db.collection("users").document(uid!!)
                 docRef.get().addOnSuccessListener {
                     if (it != null) {
@@ -181,7 +254,7 @@ class MainActivity : AppCompatActivity() {
                 6 -> {
 
                 }
-                7 ->{
+                7 -> {
                     mAuth!!.signOut()
                 }
 
@@ -209,6 +282,8 @@ class MainActivity : AppCompatActivity() {
                         supportActionBar!!.title = "Available Orders"
                         val bundle = Bundle()
                         bundle.putString("uid", uid)
+                        bundle.putDouble("myLat", driverLatLng!!.latitude)
+                        bundle.putDouble("myLng", driverLatLng!!.longitude)
                         ordersFragment.arguments = bundle
                         supportFragmentManager.beginTransaction()
                             .replace(R.id.container, ordersFragment)
@@ -323,5 +398,137 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         actionBarDrawerToggle.syncState()
+    }
+
+    private fun isPermissionGiven(): Boolean {
+        return ActivityCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun givePermission() {
+        Dexter.withActivity(this)
+            .withPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+            .withListener(this)
+            .check()
+    }
+
+    override fun onPermissionGranted(response: PermissionGrantedResponse?) {
+        getCurrentLocation()
+    }
+
+    override fun onPermissionRationaleShouldBeShown(
+        permission: PermissionRequest?,
+        token: PermissionToken?
+    ) {
+        token!!.continuePermissionRequest()
+    }
+
+    override fun onPermissionDenied(response: PermissionDeniedResponse?) {
+        Toast.makeText(this, "Permission required for showing location", Toast.LENGTH_LONG).show()
+        finish()
+    }
+
+    private fun getCurrentLocation() {
+
+        val locationRequest = LocationRequest()
+        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        locationRequest.interval = (10 * 1000).toLong()
+        locationRequest.fastestInterval = 2000
+
+        val builder = LocationSettingsRequest.Builder()
+        builder.addLocationRequest(locationRequest)
+        val locationSettingsRequest = builder.build()
+
+        val result = LocationServices.getSettingsClient(this).checkLocationSettings(
+            locationSettingsRequest
+        )
+        result.addOnCompleteListener { task ->
+            try {
+                val response = task.getResult(ApiException::class.java)
+                if (response!!.locationSettingsStates.isLocationPresent) {
+                    getLastLocation()
+                }
+            } catch (exception: ApiException) {
+                when (exception.statusCode) {
+                    LocationSettingsStatusCodes.RESOLUTION_REQUIRED -> try {
+                        val resolvable = exception as ResolvableApiException
+                        resolvable.startResolutionForResult(
+                            this,
+                            MapsActivity.REQUEST_CHECK_SETTINGS
+                        )
+                    } catch (e: IntentSender.SendIntentException) {
+                    } catch (e: ClassCastException) {
+                    }
+
+                    LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE -> {
+                    }
+                }
+            }
+        }
+    }
+
+    private fun getLastLocation() {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
+        }
+        fusedLocationProviderClient.lastLocation
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful && task.result != null) {
+                    val mLastLocation = task.result
+                    Log.e(
+                        "MainActivity",
+                        "LatLng ${mLastLocation.latitude} ${mLastLocation.longitude}"
+                    )
+                    driverLatLng = LatLng(mLastLocation.latitude, mLastLocation.longitude)
+                    if (savedInstance == null) {
+                        supportActionBar!!.title = "Available Orders"
+                        val ordersFragment = OrdersFragment()
+                        val bundle = Bundle()
+                        bundle.putString("uid", uid)
+                        bundle.putDouble("myLat", driverLatLng!!.latitude)
+                        bundle.putDouble("myLng", driverLatLng!!.longitude)
+                        ordersFragment.arguments = bundle
+                        supportFragmentManager.beginTransaction()
+                            .replace(R.id.container, ordersFragment)
+                            .commit()
+                    }
+
+                } else {
+                    Toast.makeText(this, "No current location found", Toast.LENGTH_LONG).show()
+                }
+            }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+
+        when (requestCode) {
+            REQUEST_CHECK_SETTINGS -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    getCurrentLocation()
+                }
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data)
+
+    }
+
+    companion object {
+        const val REQUEST_CHECK_SETTINGS = 44
     }
 }

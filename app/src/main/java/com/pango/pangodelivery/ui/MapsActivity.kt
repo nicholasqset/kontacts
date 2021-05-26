@@ -7,12 +7,14 @@ import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.content.res.Resources.NotFoundException
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.location.Address
 import android.location.Geocoder
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -51,14 +53,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
     private lateinit var dialog: AlertDialog
     private var mAuth: FirebaseAuth? = null
     private var mAuthListener: FirebaseAuth.AuthStateListener? = null
-    private val TAG = "MainActivity"
+    private val TAG = "MapsActivity"
+    private var deliveryLatLng: LatLng? = null
+    private var driverLatLng:LatLng? = null
     private var polylines: List<Polyline>? = null
-    private val COLORS = intArrayOf(android.R.color.black)
+    private val colors = intArrayOf(android.R.color.black)
     private var branchLat: Double = 0.0
     private var branchLng: Double = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         binding = ActivityMapsBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
@@ -80,6 +85,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
         val orderDelCharge = intent.getIntExtra("orderDelCharge", 0)
         supportActionBar!!.title = "Order#: $orderNumber"
         supportActionBar!!.subtitle = ("On the way to the shop")
+        binding.storeName.text = storeName
+        binding.storeAddress.text = branchAddress
+
+
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
@@ -88,15 +97,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
         Log.e("MapsActivity", "branchLatLng $branchLat $branchLng")
     }
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
+
 
     override fun onMapReady(map: GoogleMap?) {
         googleMap = map ?: return
@@ -122,7 +123,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
             googleMap.uiSettings.isMyLocationButtonEnabled = true
             googleMap.uiSettings.isZoomControlsEnabled = true
             googleMap.uiSettings.isZoomGesturesEnabled = true
-            try {
+
+
+            /*try {
                 // Customise the styling of the base map using a JSON object defined
                 // in a raw resource file.
                 val success: Boolean = googleMap.setMapStyle(
@@ -136,7 +139,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
                 }
             } catch (e: NotFoundException) {
                 Log.e("MapsActivity", "Can't find style. Error: ", e)
-            }
+            }*/
             getCurrentLocation()
         } else {
             givePermission()
@@ -232,7 +235,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
                 if (task.isSuccessful && task.result != null) {
                     val mLastLocation = task.result
 
-                    var address = "No known address"
+                    /*var address = "No known address"
 
                     val gcd = Geocoder(this, Locale.getDefault())
                     val addresses: List<Address>
@@ -247,7 +250,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
                         }
                     } catch (e: IOException) {
                         e.printStackTrace()
-                    }
+                    }*/
 
                     val icon = BitmapDescriptorFactory.fromBitmap(
                         BitmapFactory.decodeResource(
@@ -259,22 +262,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
                         MarkerOptions()
                             .position(LatLng(mLastLocation!!.latitude, mLastLocation.longitude))
                             .title("Current Location")
-                            .snippet(address)
+
                             .icon(icon)
                     )
 
-                    val cameraPosition = CameraPosition.Builder()
-                        .target(LatLng(mLastLocation.latitude, mLastLocation.longitude))
-                        .zoom(15f)
-                        .build()
-                    googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+
+                    Log.e("MapsActivity", "LatLng ${mLastLocation.latitude} ${mLastLocation.longitude}")
+                    Log.e("MapsActivity", "branchLatLng $branchLat $branchLng")
+                    driverLatLng = LatLng(mLastLocation.latitude, mLastLocation.longitude)
                     val routing = Routing.Builder()
                         .travelMode(AbstractRouting.TravelMode.DRIVING)
                         .withListener(this)
                         .alternativeRoutes(false)
-                        .key("AIzaSyC9kONYi6wgH0K83xs0nhAoQOVbpx_J3OY")
+                        .key("AIzaSyBdGRnFBDUjXw4Aa4GQtyTCnIfzT6lwdQ4")
                         .waypoints(
-                            LatLng(mLastLocation.latitude, mLastLocation.longitude),
+                            driverLatLng,
                             LatLng(branchLat, branchLng)
                         )
                         .build()
@@ -312,7 +314,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
 
     override fun onRoutingFailure(e: RouteException?) {
         if (e != null) {
-            Toasty.error(this, "Error: " + e.message, Toast.LENGTH_LONG).show()
+            Toasty.error(this, "Error: " + e.toString(), Toast.LENGTH_LONG).show()
             Log.e("MapsActivity", "onRoutingFailure: " + e.message)
         } else {
             Toasty.error(this, "Something went wrong, Try again", Toast.LENGTH_SHORT).show();
@@ -324,6 +326,45 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
     }
 
     override fun onRoutingSuccess(p0: ArrayList<Route>?, p1: Int) {
+        val cameraPosition = CameraPosition.Builder()
+            .target(driverLatLng!!)
+            .zoom(15f)
+            .build()
+        googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+
+        if (polylines!!.isNotEmpty()) {
+            for (poly in polylines!!) {
+                poly.remove()
+            }
+        }
+
+        polylines = ArrayList()
+        for (i in 0 until p0!!.size) {
+
+            //In case of more than 5 alternative routes
+            val colorIndex: Int = i % colors.size
+            val polyOptions = PolylineOptions()
+            polyOptions.color(resources.getColor(colors[colorIndex]))
+            polyOptions.width((10 + i * 3).toFloat())
+            polyOptions.addAll(p0[i].points)
+            val polyline: Polyline = googleMap.addPolyline(polyOptions)
+            (polylines as ArrayList<Polyline>).add(polyline)
+            binding.distance.text = "~${(p0[i].distanceValue / 1000)}Kms"
+            binding.time.text = "~${p0[i].durationValue / 60}Min"
+
+            // Toast.makeText(getApplicationContext(), "Route " + (i + 1) + ": distance - " + route.get(i).getDistanceValue() + ": duration - " + route.get(i).getDurationValue(), Toast.LENGTH_SHORT).show();
+        }
+
+        val d = BitmapFactory.decodeResource(resources, R.drawable.shop)
+        val shopMarkerIcon = BitmapDescriptorFactory.fromBitmap(d)
+
+        // Start marker
+
+        // Start marker
+        val options = MarkerOptions()
+        options.position(LatLng(branchLat,branchLng))
+        options.icon(shopMarkerIcon)
+        googleMap.addMarker(options)
 
     }
 

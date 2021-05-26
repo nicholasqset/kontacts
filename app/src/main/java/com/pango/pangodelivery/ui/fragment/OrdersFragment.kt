@@ -1,21 +1,19 @@
 package com.pango.pangodelivery.ui.fragment
 
 import android.content.Intent
+import android.location.Location
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DefaultItemAnimator
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.afollestad.materialdialogs.MaterialDialog
 import com.bumptech.glide.Glide
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
-import com.google.android.gms.common.internal.service.Common
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.firestore.EventListener
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
@@ -24,14 +22,11 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.pango.pangodelivery.R
 import com.pango.pangodelivery.databinding.FragmentOrdersBinding
-import com.pango.pangodelivery.databinding.OrderRowBinding
 import com.pango.pangodelivery.model.Order
 import com.pango.pangodelivery.ui.OrderDetailsActivity
 import com.pango.pangodelivery.viewholder.OrderViewHolder
-import dmax.dialog.SpotsDialog
-import es.dmoral.toasty.Toasty
-import java.io.Serializable
 import java.text.SimpleDateFormat
+import kotlin.math.roundToInt
 
 
 class OrdersFragment : Fragment() {
@@ -44,6 +39,7 @@ class OrdersFragment : Fragment() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
+    private var driverLatLng: LatLng? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,6 +55,9 @@ class OrdersFragment : Fragment() {
         _binding = FragmentOrdersBinding.inflate(inflater, container, false)
         val v = binding.root
         uid = requireArguments().getString("uid")
+        val myLat = requireArguments().getDouble("myLat", 0.0)
+        val myLng = requireArguments().getDouble("myLng",0.0)
+        driverLatLng = LatLng(myLat,myLng)
         val db = Firebase.firestore
         orderList = ArrayList()
         val mLayoutManager = LinearLayoutManager(v.context)
@@ -132,6 +131,19 @@ class OrdersFragment : Fragment() {
                                 branchLng = it.data!!["longitude"].toString().toDouble()
                                 Glide.with(v.context).load(branchImg).into(holder.store)
                                 holder.storeName.text = branchName
+                                val crntLocation = Location("crntlocation")
+                                crntLocation.latitude = driverLatLng!!.latitude
+                                crntLocation.longitude = driverLatLng!!.longitude
+
+                                val newLocation = Location("newlocation")
+                                newLocation.latitude = branchLat
+                                newLocation.longitude = branchLng
+
+
+                                //float distance = crntLocation.distanceTo(newLocation);  in meters
+                                val distance =(crntLocation.distanceTo(newLocation) / 1000).roundToInt() // in km
+                                Log.e("OrdersFrag","distanceTo "+ distance)
+                                holder.orderDistance.text = "~${distance}Kms"
                             }.addOnFailureListener {
 
                             }
@@ -144,6 +156,8 @@ class OrdersFragment : Fragment() {
                         val formatter = SimpleDateFormat("dd MMM yyyy HH:mm:ss")
                         val date: String = formatter.format(order.timestamp!!.toDate())
                         holder.orderDate.text = date
+
+                        holder.orderTime.visibility = View.GONE
                         holder.viewOrder.setOnClickListener {
 
                             val intent = Intent(it.context, OrderDetailsActivity::class.java)

@@ -33,6 +33,7 @@
         tools:context=".ui.MapsActivity" />
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
+
         android:id="@+id/deliveryDetails"
         android:layout_alignParentBottom="true"
         android:layout_margin="10dp"
@@ -132,7 +133,7 @@
                     android:layout_weight="1"
                     android:id="@+id/distance"
                     android:fontFamily="@font/antic"
-                    android:text="~10Km"
+                    android:text="~Km"
                     android:textAlignment="textEnd"
                     android:textColor="@color/black"
                     android:textSize="18sp"
@@ -163,7 +164,7 @@
                     android:layout_weight="1"
                     android:id="@+id/time"
                     android:fontFamily="@font/antic"
-                    android:text="~30Min"
+                    android:text="~Min"
                     android:textAlignment="textEnd"
                     android:textColor="@color/black"
                     android:textSize="18sp"

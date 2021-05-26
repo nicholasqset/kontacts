@@ -13,15 +13,26 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.EventListener
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.mikepenz.materialdrawer.model.ProfileDrawerItem
+import com.mikepenz.materialdrawer.model.interfaces.withEmail
+import com.mikepenz.materialdrawer.model.interfaces.withIcon
+import com.mikepenz.materialdrawer.model.interfaces.withIdentifier
+import com.mikepenz.materialdrawer.model.interfaces.withName
+import com.mikepenz.materialdrawer.widget.AccountHeaderView
 import com.pango.pangodelivery.R
 import com.pango.pangodelivery.databinding.ActivityOrderDetailsBinding
 import com.pango.pangodelivery.model.Item
+import com.pango.pangodelivery.ui.auth.LoginActivity
 import com.pango.pangodelivery.viewholder.ItemViewHolder
+import dmax.dialog.SpotsDialog
+import es.dmoral.toasty.Toasty
 
 
 class OrderDetailsActivity : AppCompatActivity() {
@@ -29,6 +40,8 @@ class OrderDetailsActivity : AppCompatActivity() {
     private lateinit var dialog: AlertDialog
     private var adapter: FirestoreRecyclerAdapter<Item, ItemViewHolder>? = null
     private var firestoreListener: ListenerRegistration? = null
+    private var mAuth: FirebaseAuth? = null
+    private var mAuthListener: FirebaseAuth.AuthStateListener? = null
     private var itemList = mutableListOf<Item>()
     private val TAG = "OrderDetailsActivity"
     private var uid: String? = null
@@ -39,6 +52,23 @@ class OrderDetailsActivity : AppCompatActivity() {
         setContentView(view)
         setSupportActionBar(binding.toolbar)
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+
+        mAuth = FirebaseAuth.getInstance()
+
+        mAuthListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            val user = firebaseAuth.currentUser
+            if (user != null) {
+                // User is signed in
+                uid = user.uid
+
+
+            } else {
+                val intent = Intent(this, LoginActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
+        }
+
         val orderNumber = intent.getStringExtra("orderNumber")
         val orderId = intent.getStringExtra("orderId")
         val storeName = intent.getStringExtra("storeName")
@@ -48,8 +78,8 @@ class OrderDetailsActivity : AppCompatActivity() {
         val branchAddress = intent.getStringExtra("branchAddress")
         val branchEmail = intent.getStringExtra("branchEmail")
         val branchPhone = intent.getStringExtra("branchPhone")
-        val branchLat = intent.getDoubleExtra("branchLat",0.0)
-        val branchLng = intent.getDoubleExtra("branchLng",0.0)
+        val branchLat = intent.getDoubleExtra("branchLat", 0.0)
+        val branchLng = intent.getDoubleExtra("branchLng", 0.0)
         val branchImg = intent.getStringExtra("branchImg")
         val orderDelCharge = intent.getIntExtra("orderDelCharge", 0)
 
@@ -79,9 +109,9 @@ class OrderDetailsActivity : AppCompatActivity() {
                     itemList = ArrayList()
 
                     for (doc in documentSnapshots!!) {
-                        val Item = doc.toObject(Item::class.java)
-                        Item.id = doc.id
-                        itemList.add(Item)
+                        val item = doc.toObject(Item::class.java)
+                        item.id = doc.id
+                        itemList.add(item)
 
                     }
                     Log.e("MainActivity", "Listen success! $itemList")
@@ -89,6 +119,29 @@ class OrderDetailsActivity : AppCompatActivity() {
 
                 })
         binding.acceptOrder.setOnClickListener {
+
+            dialog = SpotsDialog.Builder().setContext(this).build()
+            dialog.setMessage("Please wait...")
+            dialog.show()
+            val deliveryDetails = hashMapOf(
+                "orderNumber" to orderNumber,
+                "orderId" to orderId,
+                "branchName" to storeName,
+                "branchId" to storeId,
+                "orderDate" to orderDate,
+                "orderAmount" to orderAmount,
+                "branchAddress" to branchAddress,
+                "branchEmail" to branchEmail,
+                "branchPhone" to branchPhone,
+                "branchLat" to branchLat,
+                "branchLng" to branchLng,
+                "branchImg" to branchImg,
+                "orderDelCharge" to orderDelCharge,
+                "status" to "On the way to the shop",
+                "driverId" to uid,
+                "statusCode" to 1,
+                "timestamp" to FieldValue.serverTimestamp()
+            )
             val intent = Intent(this, MapsActivity::class.java)
             intent.putExtra("orderNumber", orderNumber)
             intent.putExtra("orderId", orderId)
@@ -103,7 +156,44 @@ class OrderDetailsActivity : AppCompatActivity() {
             intent.putExtra("branchLng", branchLng)
             intent.putExtra("branchImg", branchImg)
             intent.putExtra("orderDelCharge", orderDelCharge)
-            startActivity(intent)
+            intent.putExtra("status", "On the way to the shop")
+            intent.putExtra("statusCode", 1)
+            db.collection("orders").document(orderId).get().addOnSuccessListener {
+                if (it.data!!["status"].toString() != "2"){
+                    dialog.dismiss()
+                    Toasty.info(this, "Order has been taken by another delivery person, please try another order", Toasty.LENGTH_LONG).show()
+                    finish()
+                }else{
+                    db.collection("onDelivery").document(uid!!)
+                        .set(deliveryDetails)
+                        .addOnSuccessListener {
+                            Log.d(TAG, "DocumentSnapshot successfully written!")
+                            db.collection("orders").document(orderId)
+                                .update(
+                                    mapOf(
+                                        "status" to 3,
+                                        "currentStatus" to "On the way to the shop"
+                                    )
+                                ).addOnSuccessListener {
+                                    dialog.dismiss()
+                                    startActivity(intent)
+                                }.addOnFailureListener { e ->
+                                    dialog.dismiss()
+                                    Toasty.error(this, "Something went wrong, please try again").show()
+                                    Log.w(TAG, "Error updating document", e)
+                                }
+                        }
+                        .addOnFailureListener { e ->
+                            dialog.dismiss()
+                            Toasty.error(this, "Something went wrong, please try again").show()
+                            Log.w(TAG, "Error writing document", e)
+                        }
+                }
+
+            }
+
+
+
         }
 
     }
@@ -155,6 +245,7 @@ class OrderDetailsActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         adapter!!.startListening()
+        mAuth!!.addAuthStateListener(mAuthListener!!)
 
 
     }
@@ -162,6 +253,7 @@ class OrderDetailsActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         adapter!!.stopListening()
+        mAuth!!.removeAuthStateListener(mAuthListener!!)
 
 
     }
