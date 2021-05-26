@@ -124,7 +124,7 @@
                     <androidx.appcompat.widget.AppCompatTextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Quickmart Supermarkets"
+                        android:text=""
                         android:id="@+id/storeName"
                         android:fontFamily="@font/antic"
                         android:textColor="@color/black"

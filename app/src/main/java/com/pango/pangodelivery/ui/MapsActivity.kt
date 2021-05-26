@@ -128,31 +128,39 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
                 db.collection("onDelivery").document(uid!!)
                     .addSnapshotListener(EventListener { value, error ->
                         if (error == null) {
-                            status = value!!.data!!["status"].toString()
-                            statusCode = value.data!!["statusCode"].toString().toInt()
+                            try{
+                                if (value != null) {
 
-                            supportActionBar!!.subtitle = (status)
-                            when (statusCode) {
-                                3 -> {
-                                    binding.customerDetails.visibility = View.VISIBLE
-                                    binding.storeDetails.visibility = View.GONE
-                                    binding.reachedOrder.visibility = View.GONE
-                                    binding.pickedOrder.visibility = View.GONE
-                                    binding.completeOrder.visibility = View.VISIBLE
-                                }
-                                2 -> {
-                                    binding.reachedOrder.visibility = View.GONE
-                                    binding.pickedOrder.visibility = View.VISIBLE
-                                    binding.completeOrder.visibility = View.GONE
+                                    status = value.data!!["status"].toString()
+                                    statusCode = value.data!!["statusCode"].toString().toInt()
 
+                                    supportActionBar!!.subtitle = (status)
+                                    when (statusCode) {
+                                        3 -> {
+                                            binding.customerDetails.visibility = View.VISIBLE
+                                            binding.storeDetails.visibility = View.GONE
+                                            binding.reachedOrder.visibility = View.GONE
+                                            binding.pickedOrder.visibility = View.GONE
+                                            binding.completeOrder.visibility = View.VISIBLE
+                                        }
+                                        2 -> {
+                                            binding.reachedOrder.visibility = View.GONE
+                                            binding.pickedOrder.visibility = View.VISIBLE
+                                            binding.completeOrder.visibility = View.GONE
+
+                                        }
+                                        1 -> {
+                                            binding.reachedOrder.visibility = View.VISIBLE
+                                            binding.pickedOrder.visibility = View.GONE
+                                            binding.completeOrder.visibility = View.GONE
+                                        }
+                                    }
                                 }
-                                1 -> {
-                                    binding.reachedOrder.visibility = View.VISIBLE
-                                    binding.pickedOrder.visibility = View.GONE
-                                    binding.completeOrder.visibility = View.GONE
-                                }
+                                getCurrentLocation()
+                            }catch (e: Exception){
+                                Log.e(TAG,e.toString())
                             }
-                            getCurrentLocation()
+
                         }
                     })
 
@@ -486,9 +494,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
                                             .delete()
                                             .addOnSuccessListener {
                                                 dialog.dismiss()
-                                                Toasty.success(this, "Delivery successfully complete", Toasty.LENGTH_LONG)
+                                                Toasty.success(
+                                                    this,
+                                                    "Delivery successfully complete",
+                                                    Toasty.LENGTH_LONG
+                                                )
                                                     .show()
-                                                val intent = Intent(this,MainActivity::class.java)
+                                                val intent = Intent(this, MainActivity::class.java)
                                                 startActivity(intent)
                                                 finish()
                                             }
