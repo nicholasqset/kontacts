@@ -7,6 +7,8 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.pango.pangodelivery.R
 import com.pango.pangodelivery.databinding.ActivityLoginBinding
 import com.pango.pangodelivery.ui.MainActivity
@@ -26,14 +28,43 @@ class LoginActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
         mAuth = FirebaseAuth.getInstance()
-
+        val db = Firebase.firestore
         mAuthListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
             val user = firebaseAuth.currentUser
             if (user != null) {
                 // User is signed in
-                val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                startActivity(intent)
-                finish()
+                val docRef = db.collection("users").document(user.uid)
+                docRef.get().addOnSuccessListener { it1 ->
+                    if (it1 != null) {
+
+
+                        Log.e("LoginActivity", "typeId " + it1.data!!["typeId"])
+
+                        if (it1.data!!["typeId"].toString() == "5" && it1.data!!["isDelivery"].toString() == "1") {
+                            val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                            startActivity(intent)
+                            finish()
+                        } else if (it1.data!!["typeId"].toString() == "5" && it1.data!!["isDelivery"].toString() == "null") {
+                            val intent = Intent(this@LoginActivity, DocumentsActivity::class.java)
+                            startActivity(intent)
+                            finish()
+                        } else {
+                            Toasty.error(this, "User not allowed").show()
+                            mAuth!!.signOut()
+                            dialog.dismiss()
+//
+
+                        }
+
+
+                    } else {
+                        mAuth!!.signOut()
+                        dialog.dismiss()
+                        Log.d("MainActivity", "No such document")
+                    }
+
+                }
+
 
             }
         }
@@ -47,20 +78,19 @@ class LoginActivity : AppCompatActivity() {
             val email = binding.email.editText!!.text.toString()
             val password = binding.password.editText!!.text.toString()
 
-            if (email.isEmpty()){
+            if (email.isEmpty()) {
 
-                Toasty.error(this,"Email address cannot be blank",Toasty.LENGTH_LONG).show()
+                Toasty.error(this, "Email address cannot be blank", Toasty.LENGTH_LONG).show()
                 return@setOnClickListener
             }
-            if (password.isEmpty()){
-                Toasty.error(this,"Password cannot be blank",Toasty.LENGTH_LONG).show()
+            if (password.isEmpty()) {
+                Toasty.error(this, "Password cannot be blank", Toasty.LENGTH_LONG).show()
                 return@setOnClickListener
             }
 
-            signIn(email,password)
+            signIn(email, password)
 
         }
-
 
 
     }
@@ -76,7 +106,7 @@ class LoginActivity : AppCompatActivity() {
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
-                        dialog.dismiss()
+                    dialog.dismiss()
                     Toasty.success(
                         this@LoginActivity, "Sign in successful.",
                         Toast.LENGTH_SHORT
@@ -87,7 +117,8 @@ class LoginActivity : AppCompatActivity() {
                     dialog.dismiss()
                     Log.e("LoginActivity", "signInWithEmail:failure", task.exception)
                     Toasty.error(
-                        this@LoginActivity, "Sign in failed, Please check email and password then try again",
+                        this@LoginActivity,
+                        "Sign in failed, Please check email and password then try again",
                         Toast.LENGTH_LONG
                     ).show()
 

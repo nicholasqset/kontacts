@@ -43,7 +43,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/antic"
-                android:text="Please sign in to continue"
+                android:text="Please sign in using your PangoOrder details to continue"
                 android:textSize="18sp" />
 
         </LinearLayout>

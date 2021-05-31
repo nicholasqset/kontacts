@@ -12,10 +12,13 @@ import androidx.appcompat.app.AppCompatActivity
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuth.AuthStateListener
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
 import com.pango.pangodelivery.R
 import com.pango.pangodelivery.ui.MainActivity
+import es.dmoral.toasty.Toasty
 
 
 class SplashActivity : AppCompatActivity() {
@@ -28,7 +31,7 @@ class SplashActivity : AppCompatActivity() {
 
         mAuth = FirebaseAuth.getInstance()
 
-
+        val db = Firebase.firestore
         val permissionlistener: PermissionListener = object : PermissionListener {
             override fun onPermissionGranted() {}
             override fun onPermissionDenied(deniedPermissions: List<String>) {
@@ -81,9 +84,37 @@ class SplashActivity : AppCompatActivity() {
             if (user != null) {
 
                 // User is signed in
-                val intent = Intent(this@SplashActivity, MainActivity::class.java)
-                startActivity(intent)
-                finish()
+                val docRef = db.collection("users").document(user.uid)
+                docRef.get().addOnSuccessListener { it1 ->
+                    if (it1 != null) {
+
+
+                        Log.e("LoginActivity", "typeId " + it1.data!!["typeId"])
+
+                        if (it1.data!!["typeId"].toString() == "5" && it1.data!!["isDelivery"].toString() == "1") {
+                            val intent = Intent(this@SplashActivity, MainActivity::class.java)
+                            startActivity(intent)
+                            finish()
+                        } else if (it1.data!!["typeId"].toString() == "5" && it1.data!!["isDelivery"].toString() == "null") {
+                            val intent = Intent(this@SplashActivity, DocumentsActivity::class.java)
+                            startActivity(intent)
+                            finish()
+                        } else {
+                            Toasty.error(this, "User not allowed").show()
+                            mAuth!!.signOut()
+
+//
+
+                        }
+
+
+                    } else {
+                        mAuth!!.signOut()
+
+                        Log.d("MainActivity", "No such document")
+                    }
+
+                }
 
             } else {
                 val mainIntent = Intent(this@SplashActivity, LoginActivity::class.java)
