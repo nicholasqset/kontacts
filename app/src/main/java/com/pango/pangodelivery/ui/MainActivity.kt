@@ -79,6 +79,7 @@ class MainActivity : AppCompatActivity(), PermissionListener {
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private var driverLatLng: LatLng? = null
     private var savedInstance: Bundle? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)

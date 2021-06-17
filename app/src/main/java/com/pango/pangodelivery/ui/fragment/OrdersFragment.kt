@@ -66,7 +66,7 @@ class OrdersFragment : Fragment() {
         binding.listOrders.itemAnimator = DefaultItemAnimator()
         loadItemsList(db, v)
         firestoreListener = db.collection("orders")
-            .whereEqualTo("status", 2)
+            .whereEqualTo("status", 3)
             .whereEqualTo("orderType", 2)
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener(EventListener { documentSnapshots, e ->
@@ -95,7 +95,7 @@ class OrdersFragment : Fragment() {
         try {
             val query =
                 db.collection("orders")
-                    .whereEqualTo("status", 2)
+                    .whereEqualTo("status", 3)
                     .whereEqualTo("orderType", 2)
                     .orderBy("timestamp", Query.Direction.DESCENDING)
 
@@ -247,7 +247,7 @@ class OrdersFragment : Fragment() {
         orderList = ArrayList()
         val db = Firebase.firestore
         firestoreListener = db.collection("orders")
-            .whereEqualTo("status", 2)
+            .whereEqualTo("status", 3)
             .whereEqualTo("orderType", 2)
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener(EventListener { documentSnapshots, e ->

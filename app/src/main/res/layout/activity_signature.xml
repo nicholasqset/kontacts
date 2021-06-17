@@ -20,6 +20,33 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/et_delivery_code"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/appBar"
+        android:layout_margin="10dp"
+        android:hint="Enter Delivery Code">
+
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text" />
+
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+<!--    <com.google.android.material.textfield.TextInputEditText-->
+<!--        android:id="@+id/et_delivery_code"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_below="@+id/appBar"-->
+<!--        android:layout_margin="10dp"-->
+<!--        android:hint="Delivery Code"-->
+<!--        />-->
+
 
     <TextView
         android:layout_width="match_parent"
@@ -27,7 +54,7 @@
         android:textAlignment="center"
         android:id="@+id/title"
         android:layout_margin="10dp"
-        android:layout_below="@+id/appBar"
+        android:layout_below="@+id/et_delivery_code"
         android:textStyle="bold"
         android:text="Take customer signature to confirm delivery" />
 

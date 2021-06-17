@@ -176,7 +176,7 @@ class OrderDetailsActivity : AppCompatActivity() {
             intent.putExtra("deliveryLat", delLat)
             intent.putExtra("deliveryLng", delLng)
             db.collection("orders").document(orderId).get().addOnSuccessListener {
-                if (it.data!!["status"].toString() != "2"){
+                if (it.data!!["status"].toString() != "3"){
                     dialog.dismiss()
                     Toasty.info(this, "Order has been taken by another delivery person, please try another order", Toasty.LENGTH_LONG).show()
                     finish()
