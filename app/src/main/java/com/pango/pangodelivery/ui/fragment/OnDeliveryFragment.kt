@@ -33,7 +33,7 @@ import kotlin.math.roundToInt
 
 class OnDeliveryFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment() {
     private var firestoreListener: ListenerRegistration? = null
-    private lateinit var orderList: ArrayList<Order>
+    private lateinit var ongoingList: ArrayList<Order>
 
     private var adapter: FirestoreRecyclerAdapter<Order, OrderViewHolder>? = null
     private var _binding: FragmentOnDeliveryBinding? = null
@@ -63,7 +63,7 @@ class OnDeliveryFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment
         Log.e("OrdersFragment", "driverLatLng! $driverLatLng")
 
         val db = Firebase.firestore
-        orderList = ArrayList()
+        ongoingList = ArrayList()
         val mLayoutManager = LinearLayoutManager(v.context)
         binding.listOngoing.layoutManager = mLayoutManager
         binding.listOngoing.itemAnimator = DefaultItemAnimator()
@@ -79,16 +79,16 @@ class OnDeliveryFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment
                     return@EventListener
                 }
 
-                orderList = ArrayList()
+                ongoingList = ArrayList()
                 if (!documentSnapshots!!.isEmpty) {
                     for (doc in documentSnapshots) {
                         val order = doc.toObject(Order::class.java)
                         order.id = doc.id
-                        orderList.add(order)
+                        ongoingList.add(order)
 
                     }
                 }
-                Log.e("MainActivity", "Listen success! $orderList")
+                Log.e("MainActivity", "Listen success! $ongoingList")
 
             })
 
@@ -98,7 +98,8 @@ class OnDeliveryFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment
         try {
             val query =
                 db.collection("orders")
-                    .whereEqualTo("status", 2)
+                    .whereEqualTo("status", 3)
+                    .whereEqualTo("deliveryById",uid)
                     .whereEqualTo("orderType", 2)
                     .orderBy("timestamp", Query.Direction.DESCENDING)
 
@@ -114,9 +115,9 @@ class OnDeliveryFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment
                     model: Order
                 ) {
 
-                    if (orderList.size != 0) {
+                    if (ongoingList.size != 0) {
 
-                        val order = orderList[holder.adapterPosition]
+                        val order = ongoingList[holder.adapterPosition]
                         var branchAddress = ""
                         var branchImg = ""
                         var branchEmail = ""
@@ -154,7 +155,7 @@ class OnDeliveryFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment
                             }
 
                         binding.orderPlaceholder.visibility = View.GONE
-                        binding.ordersCount.text = "Available Orders (${orderList.size} orders)"
+                        binding.ordersCount.text = "Ongoing delivery (${ongoingList.size} deliveries)"
 
 
                         holder.orderId.text = order.orderNumber
@@ -201,7 +202,7 @@ class OnDeliveryFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment
                 }
 
                 override fun getItemCount(): Int {
-                    return orderList.size
+                    return ongoingList.size
                 }
 
 
@@ -247,12 +248,13 @@ class OnDeliveryFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment
         _binding = null
     }
 
-    override fun onResume() {
+    /*override fun onResume() {
         super.onResume()
-        orderList = ArrayList()
+        ongoingList = ArrayList()
         val db = Firebase.firestore
         firestoreListener = db.collection("orders")
-            .whereEqualTo("status", 2)
+            .whereEqualTo("status", 3)
+            .whereEqualTo("deliveryById",uid)
             .whereEqualTo("orderType", 2)
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener(EventListener { documentSnapshots, e ->
@@ -261,16 +263,16 @@ class OnDeliveryFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment
                     return@EventListener
                 }
 
-                orderList = ArrayList()
+                ongoingList = ArrayList()
                 if (!documentSnapshots!!.isEmpty) {
                     for (doc in documentSnapshots) {
                         val order = doc.toObject(Order::class.java)
                         order.id = doc.id
-                        orderList.add(order)
+                        ongoingList.add(order)
 
                     }
                 }
-                Log.e("MainActivity", "Listen success! $orderList")
+                Log.e("MainActivity", "Listen success! $ongoingList")
 
             })
         val mLayoutManager = LinearLayoutManager(requireContext())
@@ -278,7 +280,7 @@ class OnDeliveryFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment
         binding.listOngoing.itemAnimator = DefaultItemAnimator()
         adapter!!.notifyDataSetChanged()
         binding.listOngoing.adapter = adapter
-    }
+    }*/
 
     companion object {
 

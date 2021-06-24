@@ -72,6 +72,7 @@ class OrdersFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment() {
         loadItemsList(db, v)
         firestoreListener = db.collection("orders")
             .whereEqualTo("status", 3)
+            .whereEqualTo("currentStatus", "Delivery")
             .whereEqualTo("orderType", 2)
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener(EventListener { documentSnapshots, e ->
@@ -102,6 +103,7 @@ class OrdersFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment() {
                 db.collection("orders")
                     .whereEqualTo("status", 3)
                     .whereEqualTo("orderType", 2)
+                    .whereEqualTo("currentStatus", "Delivery")
                     .orderBy("timestamp", Query.Direction.DESCENDING)
 
             val response = FirestoreRecyclerOptions.Builder<Order>()
@@ -156,7 +158,7 @@ class OrdersFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment() {
                             }
 
                         binding.orderPlaceholder.visibility = View.GONE
-                        binding.ordersCount.text = "Available Orders (${orderList.size} orders)"
+                        binding.ordersCount.text = "Unassigned orders (${orderList.size} orders)"
 
 
                         holder.orderId.text = order.orderNumber
@@ -254,6 +256,7 @@ class OrdersFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment() {
         firestoreListener = db.collection("orders")
             .whereEqualTo("status", 3)
             .whereEqualTo("orderType", 2)
+            .whereEqualTo("currentStatus", "Delivery")
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener(EventListener { documentSnapshots, e ->
                 if (e != null) {
