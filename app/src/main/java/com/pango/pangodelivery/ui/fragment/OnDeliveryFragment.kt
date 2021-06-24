@@ -4,10 +4,10 @@ import android.content.Intent
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -21,20 +21,22 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.pango.pangodelivery.R
+import com.pango.pangodelivery.databinding.FragmentOnDeliveryBinding
 import com.pango.pangodelivery.databinding.FragmentOrdersBinding
 import com.pango.pangodelivery.model.Order
+import com.pango.pangodelivery.ui.MapsActivity
 import com.pango.pangodelivery.ui.OrderDetailsActivity
 import com.pango.pangodelivery.viewholder.OrderViewHolder
 import java.text.SimpleDateFormat
 import kotlin.math.roundToInt
 
 
-class OrdersFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment() {
+class OnDeliveryFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment() {
     private var firestoreListener: ListenerRegistration? = null
     private lateinit var orderList: ArrayList<Order>
 
     private var adapter: FirestoreRecyclerAdapter<Order, OrderViewHolder>? = null
-    private var _binding: FragmentOrdersBinding? = null
+    private var _binding: FragmentOnDeliveryBinding? = null
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -51,27 +53,24 @@ class OrdersFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment() {
     }
 
     override fun onCreateView(
-
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         // Inflate the layout for this fragment
-        _binding = FragmentOrdersBinding.inflate(inflater, container, false)
+        _binding = FragmentOnDeliveryBinding.inflate(inflater, container, false)
         val v = binding.root
-       /* uid = requireArguments().getString("uid")
-        val myLat = requireArguments().getDouble("myLat", 0.0)
-        val myLng = requireArguments().getDouble("myLng",0.0)*/
         driverLatLng = LatLng(myLat!!,myLng!!)
         Log.e("OrdersFragment", "driverLatLng! $driverLatLng")
 
         val db = Firebase.firestore
         orderList = ArrayList()
         val mLayoutManager = LinearLayoutManager(v.context)
-        binding.listOrders.layoutManager = mLayoutManager
-        binding.listOrders.itemAnimator = DefaultItemAnimator()
+        binding.listOngoing.layoutManager = mLayoutManager
+        binding.listOngoing.itemAnimator = DefaultItemAnimator()
         loadItemsList(db, v)
         firestoreListener = db.collection("orders")
-            .whereEqualTo("status", 2)
+            .whereEqualTo("status", 3)
+            .whereEqualTo("deliveryById",uid)
             .whereEqualTo("orderType", 2)
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener(EventListener { documentSnapshots, e ->
@@ -95,7 +94,6 @@ class OrdersFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment() {
 
         return v
     }
-
     private fun loadItemsList(db: FirebaseFirestore, v: View) {
         try {
             val query =
@@ -165,9 +163,10 @@ class OrdersFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment() {
                         holder.orderDate.text = date
 
                         holder.orderTime.visibility = View.GONE
+                        holder.viewOrder.text = "Track Delivery"
                         holder.viewOrder.setOnClickListener {
 
-                            val intent = Intent(it.context, OrderDetailsActivity::class.java)
+                            val intent = Intent(it.context, MapsActivity::class.java)
                             intent.putExtra("orderNumber", order.orderNumber)
                             intent.putExtra("orderId", order.id)
                             intent.putExtra("storeName", branchName)
@@ -187,6 +186,8 @@ class OrdersFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment() {
                             intent.putExtra("deliveryLat", order.deliveryLat)
                             intent.putExtra("deliveryLng", order.deliveryLng)
                             intent.putExtra("distance",distance)
+                            intent.putExtra("status", order.currentStatus)
+                            intent.putExtra("statusCode",order.status)
 
                             it.context.startActivity(intent)
                         }
@@ -206,14 +207,13 @@ class OrdersFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment() {
 
             }
             adapter!!.notifyDataSetChanged()
-            binding.listOrders.adapter = adapter
+            binding.listOngoing.adapter = adapter
         } catch (e: Exception) {
             Log.e("RecycleAdapter", e.toString())
         }
 
 
     }
-
 
     override fun onDestroy() {
         super.onDestroy()
@@ -274,12 +274,11 @@ class OrdersFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment() {
 
             })
         val mLayoutManager = LinearLayoutManager(requireContext())
-        binding.listOrders.layoutManager = mLayoutManager
-        binding.listOrders.itemAnimator = DefaultItemAnimator()
+        binding.listOngoing.layoutManager = mLayoutManager
+        binding.listOngoing.itemAnimator = DefaultItemAnimator()
         adapter!!.notifyDataSetChanged()
-        binding.listOrders.adapter = adapter
+        binding.listOngoing.adapter = adapter
     }
-
 
     companion object {
 

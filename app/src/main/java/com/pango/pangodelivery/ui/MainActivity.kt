@@ -9,10 +9,7 @@ import android.content.IntentSender
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
-import android.location.Address
-import android.location.Geocoder
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -27,16 +24,11 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.bumptech.glide.Glide
-import com.directions.route.AbstractRouting
-import com.directions.route.Routing
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.karumi.dexter.Dexter
@@ -55,16 +47,12 @@ import com.mikepenz.materialdrawer.util.AbstractDrawerImageLoader
 import com.mikepenz.materialdrawer.util.DrawerImageLoader
 import com.mikepenz.materialdrawer.util.addStickyFooterItem
 import com.mikepenz.materialdrawer.widget.AccountHeaderView
-import com.pango.pangodelivery.ui.fragment.OrdersFragment
 import com.pango.pangodelivery.R
 import com.pango.pangodelivery.databinding.ActivityMainBinding
 import com.pango.pangodelivery.ui.auth.LoginActivity
-import com.pango.pangodelivery.ui.fragment.DashboardFragment
-import com.pango.pangodelivery.ui.fragment.EarningsFragment
-import com.pango.pangodelivery.ui.fragment.MyAccountFragment
+import com.pango.pangodelivery.ui.fragment.*
 import dmax.dialog.SpotsDialog
 import nl.joery.animatedbottombar.AnimatedBottomBar
-import java.io.IOException
 import java.util.*
 
 class MainActivity : AppCompatActivity(), PermissionListener {
@@ -92,7 +80,7 @@ class MainActivity : AppCompatActivity(), PermissionListener {
         val dashFragment = DashboardFragment()
         val earnFragment = EarningsFragment()
         val accFragment = MyAccountFragment()
-        val ordersFragment = OrdersFragment()
+        val availableFragment = AvailableFragment()
         val fragsList = listOf(dashFragment, earnFragment, accFragment)
         fusedLocationProviderClient = FusedLocationProviderClient(this)
 
@@ -122,7 +110,7 @@ class MainActivity : AppCompatActivity(), PermissionListener {
                 // User is signed in
                 uid = user.uid
 
-                db.collection("onDelivery").document(uid!!).get().addOnSuccessListener {
+                /*db.collection("onDelivery").document(uid!!).get().addOnSuccessListener {
                     dialog.dismiss()
                     if (it.exists()) {
 
@@ -173,11 +161,12 @@ class MainActivity : AppCompatActivity(), PermissionListener {
 
 
                     }
-                }
+                }*/
 
                 val docRef = db.collection("users").document(uid!!)
                 docRef.get().addOnSuccessListener {
                     if (it != null) {
+                        dialog.dismiss()
                         Log.d("MainActivity", "DocumentSnapshot data: ${it.data}")
                         val sharedPref = getSharedPreferences("PangoDelivery", Context.MODE_PRIVATE)
                         val editor: SharedPreferences.Editor = sharedPref.edit()
@@ -308,9 +297,10 @@ class MainActivity : AppCompatActivity(), PermissionListener {
                         bundle.putString("uid", uid)
                         bundle.putDouble("myLat", driverLatLng!!.latitude)
                         bundle.putDouble("myLng", driverLatLng!!.longitude)
-                        ordersFragment.arguments = bundle
+
+                        availableFragment.arguments = bundle
                         supportFragmentManager.beginTransaction()
-                            .replace(R.id.container, ordersFragment)
+                            .replace(R.id.container, availableFragment)
                             .commit()
                     }
 
@@ -522,14 +512,14 @@ class MainActivity : AppCompatActivity(), PermissionListener {
                     driverLatLng = LatLng(mLastLocation.latitude, mLastLocation.longitude)
                     if (savedInstance == null) {
                         supportActionBar!!.title = "Available Orders"
-                        val ordersFragment = OrdersFragment()
+                        val availableFragment = AvailableFragment()
                         val bundle = Bundle()
                         bundle.putString("uid", uid)
                         bundle.putDouble("myLat", driverLatLng!!.latitude)
                         bundle.putDouble("myLng", driverLatLng!!.longitude)
-                        ordersFragment.arguments = bundle
+                        availableFragment.arguments = bundle
                         supportFragmentManager.beginTransaction()
-                            .replace(R.id.container, ordersFragment)
+                            .replace(R.id.container, availableFragment)
                             .commit()
                     }
 

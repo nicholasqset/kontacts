@@ -38,7 +38,7 @@ class LoginActivity : AppCompatActivity() {
                     if (it1 != null) {
 
 
-                        Log.e("LoginActivity", "typeId " + it1.data!!["typeId"])
+                        Log.e("LoginActivity", "typeId " + it1.data!!["typeId"].toString())
 
                         if (it1.data!!["typeId"].toString() == "5" && it1.data!!["isDelivery"].toString() == "1") {
                             val intent = Intent(this@LoginActivity, MainActivity::class.java)

@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    tools:context=".ui.fragment.DashboardFragment">
+    android:orientation="vertical">
 
 
 
@@ -34,7 +33,7 @@
                     android:layout_weight="1"
                     android:id="@+id/ordersCount"
                     android:fontFamily="@font/antic"
-                    android:text="Unassigned orders (0 orders)"
+                    android:text="Ongoing delivery (0 deliveries)"
                     android:textColor="@color/black"
                     android:textSize="18sp"
                     android:textStyle="bold" />
@@ -54,11 +53,11 @@
                 android:fontFamily="@font/antic"
                 android:textAlignment="center"
                 android:textStyle="italic"
-                android:text="No Orders Unassigned"
+                android:text="No Ongoing Delivery"
                 android:textColor="@color/black"
                 android:textSize="20sp" />
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/listOrders"
+                android:id="@+id/listOngoing"
                 tools:listitem="@layout/order_row"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

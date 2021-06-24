@@ -181,7 +181,7 @@ class OrderDetailsActivity : AppCompatActivity() {
                     Toasty.info(this, "Order has been taken by another delivery person, please try another order", Toasty.LENGTH_LONG).show()
                     finish()
                 }else{
-                    db.collection("onDelivery").document(uid!!)
+                    db.collection("onDelivery").document(orderId)
                         .set(deliveryDetails)
                         .addOnSuccessListener {
                             Log.d(TAG, "DocumentSnapshot successfully written!")
