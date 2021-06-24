@@ -30,6 +30,7 @@ class SplashActivity : AppCompatActivity() {
         setContentView(R.layout.activity_splash)
 
         mAuth = FirebaseAuth.getInstance()
+//        mAuth!!.signOut()
 
         val db = Firebase.firestore
         val permissionlistener: PermissionListener = object : PermissionListener {

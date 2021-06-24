@@ -238,6 +238,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
         }
         binding.completeOrder.setOnClickListener {
             val i = Intent(this@MapsActivity, SignatureActivity::class.java)
+            i.putExtra("orderNumber", orderNumber)
+            i.putExtra("orderId", orderId)
             startActivityForResult(i, SIGNATURE_REQUEST)
         }
     }
