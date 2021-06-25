@@ -38,7 +38,7 @@ class AvailableFragment : Fragment() {
         myLat = requireArguments().getDouble("myLat", 0.0)
         myLng = requireArguments().getDouble("myLng",0.0)
         binding.viewpager.offscreenPageLimit = 1
-        binding.viewpager.adapter = MyAdapter(requireActivity().supportFragmentManager, lifecycle)
+        binding.viewpager.adapter = MyAdapter(childFragmentManager, lifecycle)
         TabLayoutMediator(
             binding.tabs,
             binding.viewpager,

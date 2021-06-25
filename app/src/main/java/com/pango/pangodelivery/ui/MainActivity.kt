@@ -78,11 +78,11 @@ class MainActivity : AppCompatActivity(), PermissionListener {
         mAuth = FirebaseAuth.getInstance()
         savedInstance = savedInstanceState
 
-        val dashFragment = DashboardFragment()
-        val earnFragment = EarningsFragment()
+
+
         val accFragment = MyAccountFragment()
-        val availableFragment = AvailableFragment()
-        val fragsList = listOf(dashFragment, earnFragment, accFragment)
+
+
         fusedLocationProviderClient = FusedLocationProviderClient(this)
 
         if (isPermissionGiven()) {
@@ -251,6 +251,7 @@ class MainActivity : AppCompatActivity(), PermissionListener {
             // do something with the clicked item :D
             when (position) {
 
+
                 1 -> {
                 }
                 2 -> {
@@ -293,6 +294,7 @@ class MainActivity : AppCompatActivity(), PermissionListener {
 
                 when (newIndex) {
                     0 -> {
+                        val availableFragment = AvailableFragment()
                         supportActionBar!!.title = "Available Orders"
                         val bundle = Bundle()
                         bundle.putString("uid", uid)
@@ -306,7 +308,7 @@ class MainActivity : AppCompatActivity(), PermissionListener {
                     }
 
                     1 -> {
-
+                        val dashFragment = DashboardFragment()
                         supportActionBar!!.title = "Dashboard"
                         val bundle = Bundle()
                         bundle.putString("uid", uid)
@@ -317,6 +319,7 @@ class MainActivity : AppCompatActivity(), PermissionListener {
 
                     }
                     2 -> {
+                        val earnFragment = EarningsFragment()
                         supportActionBar!!.title = "Earnings"
                         val bundle = Bundle()
                         bundle.putString("uid", uid)
