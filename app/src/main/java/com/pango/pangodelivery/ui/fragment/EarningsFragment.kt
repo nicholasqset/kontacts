@@ -65,7 +65,7 @@ class EarningsFragment : Fragment() {
         firestoreListener = db.collection("orders")
             .whereEqualTo("status", 6)
             .whereEqualTo("deliveryById", uid)
-            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .orderBy("timestamp", Query.Direction.ASCENDING)
             .addSnapshotListener(EventListener { documentSnapshots, e ->
                 if (e != null) {
                     Log.e("MainActivity", "Listen failed!", e)
