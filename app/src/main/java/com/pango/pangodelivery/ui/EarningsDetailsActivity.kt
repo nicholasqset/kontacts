@@ -84,7 +84,7 @@ class EarningsDetailsActivity : AppCompatActivity() {
 
 
         supportActionBar!!.title = "Order#: $orderNumber"
-        binding.amount.text = "Kshs $orderAmount"
+        binding.amount.text = "Kshs ${orderAmount+orderDelCharge}"
         binding.commission.text = "Kshs $orderDelCharge"
         binding.storeAddress.text = branchAddress
         binding.storeName.text = storeName

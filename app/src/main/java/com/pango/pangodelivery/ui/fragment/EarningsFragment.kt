@@ -162,7 +162,7 @@ class EarningsFragment : Fragment() {
                             intent.putExtra("branchLat", branchLat)
                             intent.putExtra("branchLng", branchLng)
                             intent.putExtra("branchImg", branchImg)
-                            intent.putExtra("orderDelCharge", order.deliveryCharge)
+                            intent.putExtra("orderDelCharge", Integer.valueOf(order.deliveryCharge.toString()))
                             intent.putExtra("custName",order.orderBy)
                             intent.putExtra("custPhone", order.orderByPhone)
                             intent.putExtra("deliveryAddress", order.deliveryAddress)
