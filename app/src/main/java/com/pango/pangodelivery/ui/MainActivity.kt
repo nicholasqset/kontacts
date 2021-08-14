@@ -49,6 +49,7 @@ import com.mikepenz.materialdrawer.util.addStickyFooterItem
 import com.mikepenz.materialdrawer.widget.AccountHeaderView
 import com.pango.pangodelivery.R
 import com.pango.pangodelivery.databinding.ActivityMainBinding
+import com.pango.pangodelivery.model.Item
 import com.pango.pangodelivery.ui.auth.LoginActivity
 import com.pango.pangodelivery.ui.fragment.*
 import dmax.dialog.SpotsDialog
@@ -105,11 +106,14 @@ class MainActivity : AppCompatActivity(), PermissionListener {
         dialog.setMessage("Please wait...")
         dialog.show()
 
+
         mAuthListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
             val user = firebaseAuth.currentUser
             if (user != null) {
                 // User is signed in
                 uid = user.uid
+
+
 
                 /*db.collection("onDelivery").document(uid!!).get().addOnSuccessListener {
                     dialog.dismiss()

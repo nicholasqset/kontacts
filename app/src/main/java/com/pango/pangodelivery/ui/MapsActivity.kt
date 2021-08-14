@@ -125,7 +125,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
             if (user != null) {
                 // User is signed in
                 uid = user.uid
-                db.collection("onDelivery").document(uid!!)
+                db.collection("onDelivery").document(orderId!!)
                     .addSnapshotListener(EventListener { value, error ->
                         if (error == null) {
                             try{
@@ -176,13 +176,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment!!.getMapAsync(this)
         fusedLocationProviderClient = FusedLocationProviderClient(this)
-        Log.e("MapsActivity", "branchLatLng $branchLat $branchLng")
+        Log.e("MapsActivity", "branchLatLng $branchLat $branchLng $orderId")
 
         binding.reachedOrder.setOnClickListener {
             dialog = SpotsDialog.Builder().setContext(this).build()
             dialog.setMessage("Please wait...")
             dialog.show()
-            db.collection("onDelivery").document(uid!!)
+            Log.e("MapsActivity", "OrderID $orderId")
+            db.collection("onDelivery").document(orderId!!)
                 .update(
                     mapOf(
                         "status" to "Picking up order",
@@ -211,7 +212,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
             dialog = SpotsDialog.Builder().setContext(this).build()
             dialog.setMessage("Please wait...")
             dialog.show()
-            db.collection("onDelivery").document(uid!!)
+            db.collection("onDelivery").document(orderId!!)
                 .update(
                     mapOf(
                         "status" to "Heading to customer",
@@ -492,7 +493,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
                                         delData
                                     ).addOnSuccessListener {
 
-                                        db.collection("onDelivery").document(uid!!)
+                                        db.collection("onDelivery").document(orderId!!)
                                             .delete()
                                             .addOnSuccessListener {
                                                 dialog.dismiss()
