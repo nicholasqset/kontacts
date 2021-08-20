@@ -120,7 +120,7 @@ class EarningsFragment : Fragment() {
                         db.collection("branches").document(order.branchId!!).get()
                             .addOnSuccessListener {
                                 branchName = it.data!!["branch"].toString()
-                                branchAddress = it.data!!["address"].toString()
+                                branchAddress = it.data!!["city"].toString()
                                 branchImg = it.data!!["branchImg"].toString()
                                 branchEmail = it.data!!["email"].toString()
                                 branchPhone = it.data!!["phoneNo"].toString()
