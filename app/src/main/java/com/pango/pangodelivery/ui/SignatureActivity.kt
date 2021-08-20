@@ -34,7 +34,7 @@ class SignatureActivity : AppCompatActivity() {
 
         orderId = intent.getStringExtra("orderId")
 
-        binding.signaturePad.setOnSignedListener(object : SignaturePad.OnSignedListener {
+        /*binding.signaturePad.setOnSignedListener(object : SignaturePad.OnSignedListener {
             override fun onStartSigning() {
 
             }
@@ -52,7 +52,7 @@ class SignatureActivity : AppCompatActivity() {
             }
 
 
-        })
+        })*/
 
         binding.saveButton.setOnClickListener {
 
@@ -65,13 +65,13 @@ class SignatureActivity : AppCompatActivity() {
                         val dbDeliveryCode = document.getString("deliveryCode")
                         if(deliveryCode.equals(dbDeliveryCode)){
 
-                            val bitmap: Bitmap = binding.signaturePad.transparentSignatureBitmap
+                          /*  val bitmap: Bitmap = binding.signaturePad.transparentSignatureBitmap
                             val stream = ByteArrayOutputStream()
                             bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream)
-                            val byteArray: ByteArray = stream.toByteArray()
+                            val byteArray: ByteArray = stream.toByteArray()*/
 
                             val intent = Intent()
-                            intent.putExtra("result", byteArray)
+                            intent.putExtra("result", true)
                             setResult(RESULT_OK, intent)
                             finish()
                         }else{

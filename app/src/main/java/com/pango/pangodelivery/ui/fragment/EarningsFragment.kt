@@ -120,7 +120,7 @@ class EarningsFragment : Fragment() {
                         db.collection("branches").document(order.branchId!!).get()
                             .addOnSuccessListener {
                                 branchName = it.data!!["branch"].toString()
-                                branchAddress = it.data!!["physicalAddr"].toString()
+                                branchAddress = it.data!!["address"].toString()
                                 branchImg = it.data!!["branchImg"].toString()
                                 branchEmail = it.data!!["email"].toString()
                                 branchPhone = it.data!!["phoneNo"].toString()
@@ -143,9 +143,14 @@ class EarningsFragment : Fragment() {
                         holder.orderId.text = order.orderNumber
                         val formatter = SimpleDateFormat("dd MMM yyyy HH:mm:ss")
                         val date: String = formatter.format(order.timestamp!!.toDate())
-                        val completedOn : String = formatter.format(order.deliveryDoneOn!!.toDate())
+                        var completedOn: String? = null
+                        if(order.deliveryDoneOn != null) {
+                             completedOn =
+                                formatter.format(order.deliveryDoneOn!!.toDate())
+                            holder.orderTime.text = "Completed on $completedOn"
+                        }
                         val startedOn : String = formatter.format(order.deliveryStartedOn!!.toDate())
-                        holder.orderTime.text = "Completed on $completedOn"
+
                         holder.orderCommission.text = "+${order.deliveryCharge}"
                         holder.viewOrder.setOnClickListener {
 

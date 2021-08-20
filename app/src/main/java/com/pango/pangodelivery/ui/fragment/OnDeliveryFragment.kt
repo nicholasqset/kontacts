@@ -129,7 +129,7 @@ class OnDeliveryFragment(uid: String, myLat: Double?, myLng: Double?) : Fragment
                         db.collection("branches").document(order.branchId!!).get()
                             .addOnSuccessListener {
                                 branchName = it.data!!["branch"].toString()
-                                branchAddress = it.data!!["physicalAddr"].toString()
+                                branchAddress = it.data!!["address"].toString()
                                 branchImg = it.data!!["branchImg"].toString()
                                 branchEmail = it.data!!["email"].toString()
                                 branchPhone = it.data!!["phoneNo"].toString()

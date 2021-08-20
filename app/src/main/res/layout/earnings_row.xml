@@ -44,7 +44,7 @@
             <androidx.appcompat.widget.AppCompatTextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Completed at 2:35pm"
+                android:text="Completed"
                 android:id="@+id/orderTime"
                 android:fontFamily="@font/antic"
                 android:textSize="16sp"/>

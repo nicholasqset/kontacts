@@ -324,7 +324,7 @@ class MainActivity : AppCompatActivity(), PermissionListener {
                     }
                     2 -> {
                         val earnFragment = EarningsFragment()
-                        supportActionBar!!.title = "Earnings"
+                        supportActionBar!!.title = "Completed"
                         val bundle = Bundle()
                         bundle.putString("uid", uid)
                         earnFragment.arguments = bundle
