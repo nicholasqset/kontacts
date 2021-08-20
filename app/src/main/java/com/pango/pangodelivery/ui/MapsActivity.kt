@@ -573,7 +573,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RoutingListener, P
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
-                onBackPressed()
+                finish()
+                startActivity(Intent(this,MainActivity::class.java))
                 true
             }
             else -> super.onOptionsItemSelected(item)
