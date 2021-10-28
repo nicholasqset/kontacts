@@ -28,16 +28,10 @@
 //                             console.log(JSON.stringify(response.status));
                              console.log(response);
                             if(response.status === 1){
-//                                session.setCookie("userId", userId, 365);
-//                                session.setCookie("userName", response.data.profile.userName, 365);
-//                                session.setCookie("email", response.data.profile.email, 365);
-//                                session.setCookie("phoneNo", response.data.profile.phoneNo, 365);
-
 //                                window.location.href = '../';
                             }else{
-                                console.log('invalid credentials');
+                                console.log('invalid data');
 
-//                                alert('Invalid Credentials')
                             }
                         },
                         error: function (error) {
