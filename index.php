@@ -25,9 +25,9 @@
                         url: './parser/?function=listContacts',
                         type: "POST",
                         success: function (response) {
-//                             console.log(JSON.stringify(response.status));
-                             console.log(response);
-                            if(response.status === 1){
+                            response = JSON.parse(response);
+                            if(response.success === 1){
+                                console.log('data in');
 //                                window.location.href = '../';
                             }else{
                                 console.log('invalid data');
