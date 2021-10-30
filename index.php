@@ -6,9 +6,10 @@
         <title>Address Book</title>
         <link rel="stylesheet" href="assets/bootstrap/node_modules/bootstrap/dist/css/bootstrap.min.css"/>
     </head>
-    <body>
+    <body class="container-fluid">
         <h4 class="text-center font-weight-bold">Address Book</h4>
-        <div>
+        <button type="button" class="btn btn-primary" onclick="kontact.addKontact();">Add New Contact</button>
+        <div id="dv_kontacts">
             <table class="table" id="tbl_kontacts">
                 <tr>
                     <th>#</th>
@@ -18,6 +19,8 @@
                     <th>Street</th>
                     <th>Zip Code</th>
                     <th>City</th>
+                    <th>Edit</th>
+                    <th>Delete</th>
                 </tr>
             </table>
         </div>
@@ -46,10 +49,13 @@
                                         
                                         table += '<td>' + value2 + '</td>'
                                     }
-                                    
+                                    let editOpt = "<a href='#'>edit</a>";
+                                    let delOpt = "<a href='#'>delete</a>";
+                                    table += '<td>' + editOpt + '</td>'
+                                    table += '<td>' + delOpt + '</td>'
                                     table += '</tr>'; 
                                     
-                                    console.log(table);
+//                                    console.log(table);
                                     
                                     $('#tbl_kontacts').append(table);
                                     
@@ -63,6 +69,10 @@
                             console.log("error: " + JSON.stringify(error));
                         }
                     });
+                },
+                addKontact: function(){
+                    console.log('adding...');
+                    $('#dv_kontacts').html('zzzzzzz');
                 }
             };
         </script>
