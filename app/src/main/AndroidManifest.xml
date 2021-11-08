@@ -22,6 +22,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.PangoDelivery">
+        <activity android:name=".ui.IntroSliderActivity"></activity>
         <activity android:name=".ui.auth.DocumentsActivity" />
         <activity android:name=".ui.EarningsDetailsActivity" />
         <activity android:name=".ui.SignatureActivity" />
@@ -41,7 +42,6 @@
             android:name="com.yalantis.ucrop.UCropActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-
         <activity
             android:name=".ui.MapsActivity"
             android:label="@string/title_activity_maps" />
